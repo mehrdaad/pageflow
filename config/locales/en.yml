@@ -93,9 +93,13 @@ en:
         contains: Contains
         ends_with: Ends with
         equals: Equals
+        from: From
         greater_than: Greater than
+        gteq_datetime: Greater or equal to
         less_than: Less than
+        lteq_datetime: Lesser or equal to
         starts_with: Starts with
+        to: To
     greater_than: Greater than
     has_many_delete: Delete
     has_many_new: Add New %{model}
@@ -108,6 +112,7 @@ en:
     less_than: Less than
     logout: Logout
     main_content: Please implement %{model}#main_content to display content.
+    new: Create new
     new_model: New %{model}
     next: Next
     pagination:
@@ -157,7 +162,7 @@ en:
         created_at: Created at
         default_file_rights: Default file credits
         default_theming: Default theming
-        entries_count: "# Entries"
+        entries_count: "# Stories"
         landing_page_name: Landing page
         name: Name
         own_role: Own Role
@@ -177,28 +182,35 @@ en:
         credits: Credits
         edited_at: Updated at
         embed_code: Embed
-        emphasize_chapter_beginning: Emphasize chapter beginning
-        emphasize_new_pages: Emphasize new pages
         first_published_at: First published at
-        home_button_enabled: Show 'Home' button
-        home_url: "'Home' Button URL"
         keywords: Keywords
         locale: Language
-        manual_start: Show Instruction-Overlay
-        overview_button_enabled: Show 'Overview' button
         own_role: Role
         published?: Publication state
         published_at: Published since
         published_revision_published_at: Published since
         publisher: Publisher
         share_image_id: Social Sharing Image
+        share_providers: Social Share Links
         share_url: Social Sharing URL
         summary: Summary
         theme_name: Theme
         title: Title
+        type_name: Story type
         updated_at: Updated at
         url: Permalink
         with_publication_state: Publication state
+      pageflow/entry_template:
+        configuration:
+          group_label: Configuration
+          home_button_enabled: "'Home'-Button enabled by default"
+        default_author: Default author
+        default_keywords: Default keywords
+        default_locale: Default locale
+        default_publisher: Default publisher
+        default_share_providers: Default share links
+        entry_type: Story type
+        theme_name: Theme
       pageflow/folder:
         account: Account
         name: Name
@@ -227,6 +239,7 @@ en:
         display_in_navigation: Show in navigationbar
         emphasize_in_navigation: Emphasize in navigationbar
         gradient_opacity: Gradient opacity
+        hide_logo: Hide logo
         hide_title: Hide titles
         invert: Invert colors
         linked_page_ids: Link pages
@@ -261,18 +274,19 @@ en:
         cname: CNAME
         copyright_link_label: Copyright link Text
         copyright_link_url: Copyright link URL
-        default_author: Default author
-        default_keywords: Default keywords
-        default_publisher: Default publisher
-        home_button_enabled_by_default: "'Home'-Button enabled by default"
         home_url: Redirect URL
         imprint_link_label: Legal notice link label
         imprint_link_url: Legal notice link URL
-        theme_name: Theme
+        privacy_link_url: Privacy link URL
+        share_providers: Default Share Links
       pageflow/video_file:
         dimensions: Dimensions
         duration: Duration
         format: Format
+      pageflow/widget:
+        blur_strength: Blurriness
+        invert: Invert Color
+        remove_logo: Remove Logo
       user:
         account: Account
         admin: System administrator
@@ -341,7 +355,17 @@ en:
         pageflow/entry:
           attributes:
             folder:
-              must_be_same_account: Folder must belong to same account as entry
+              must_be_same_account: Folder must belong to same account as story
+            type_name:
+              must_be_available_for_account: "'%{type_name}' isn't available for this account"
+        pageflow/entry_template:
+          attributes:
+            entry_type:
+              taken: already configured. A story template for the story type already exists in this account. Return to the story templates tab and edit the existing story template instead of creating a new one.
+        pageflow/membership:
+          attributes:
+            user:
+              required: User must be selected
     models:
       account:
         one: Account
@@ -367,6 +391,9 @@ en:
       pageflow/entry:
         one: Story
         other: Stories
+      pageflow/entry_template:
+        one: Story template
+        other: Story templates
       pageflow/folder:
         one: Folder
         other: Folders
@@ -411,6 +438,16 @@ en:
           not_published: Not published
           published_with_password_protection: Published with password protection
           published_without_password_protection: Published without password protection
+        share_providers:
+          email: Email
+          facebook: Facebook
+          linked_in: LinkedIn
+          telegram: Telegram (only mobile)
+          twitter: Twitter
+          whats_app: WhatsApp (only mobile)
+        type_names:
+          paged: Page-based / Classic
+          scrolled: Continuously scrolling / Pageflow Next
       pageflow/membership:
         role:
           editor: Editor
@@ -446,6 +483,7 @@ en:
           internal_links: Internal Links
           video: Video
         text_position:
+          center: Center
           left: Left
           right: Right
         transition:
@@ -751,30 +789,32 @@ en:
     admin:
       account:
         add: Add Account
+        cannot_add: What you want to do is not possible at the moment.
         none_addable_tooltip: No account available
       accounts:
+        entry_template_hint: Some of the form fields can now be found in the story template tab on the info page for this account
         no_entries: No Stories
         no_members: No members
-        theming_defaults_inline_help: The following settings will be used as defaults for new entries in this account. Changes do not affect existing entries.
-        widgets_inline_help: DELETED
+        theming_defaults_inline_help: The following settings will be used as defaults for new stories in this account. Changes do not affect existing stories.
       entries:
         add_folder: Add folder
-        confirm_depublish: Unpublish this story?
+        confirm_depublish: Depublish this story?
         confirm_duplicate: Duplicate this story?
         confirm_restore: Restore story to the selected version? A snapshot will be created, so that you can roll back later.
-        depublish: Unpublish story
+        depublish: Depublish story
         duplicate: Copy Story
         edit: Edit
         edit_config: Edit configuration
         edit_revision: Edit
         editor: Editor
         editor_hint: Open editor
-        embed_code_hint: Embed the published entry on a website.
+        embed_code_hint: Embed the published story on a website.
         entries: Stories
         forever: "(unlimited)"
         members: Members
         no_members: No members assigned
         no_revisions: No versions yet
+        not_allowed_to_see_entry_types: You are not allowed to access the available story types for this account.
         not_published: Not yet published
         password_protected: Password protected
         preview: Preview
@@ -801,8 +841,14 @@ en:
         snapshot: Save current version
         title_hint: This field determines the URL for this story.
       entry:
-        add: Add Entry
-        none_addable_tooltip: No entry available
+        add: Add Story
+        entry_membership_hint: Invite users to your account to assign them as members of this Story.
+        none_addable_tooltip: No story available
+        user_quota_exhausted: Your user quota is exhausted.
+      entry_templates:
+        page_title:
+          edit: Edit story template for story type
+          new: Create new story template for story type
       features:
         states:
           default: Default (%{inherited})
@@ -817,31 +863,35 @@ en:
       memberships:
         on_account:
           role:
-            hint_html: You can assign roles on individual entries of this account to a <strong>Member</strong>.<br>A <strong>Previewer</strong> can additionally preview all entries of this account.<br>An <strong>Editor</strong> can additionally edit all entries of this account.<br>A <strong>Publisher</strong> can additionally publish all entries of this account.<br>A <strong>Manager</strong> can additionally set user roles on all entries of this account and edit them.
+            hint_html: You can assign roles on individual stories of this account to a <strong>Member</strong>.<br>A <strong>Previewer</strong> can additionally preview all stories of this account.<br>An <strong>Editor</strong> can additionally edit all stories of this account.<br>A <strong>Publisher</strong> can additionally publish all stories of this account.<br>A <strong>Manager</strong> can additionally set user roles on all stories of this account and edit them.
         on_entry:
           role:
-            hint_html: A <strong>Previewer</strong> can preview this entry.<br>An <strong>Editor</strong> can additionally edit this entry.<br>A <strong>Publisher</strong> can additionally publish this entry.<br>A <strong>Manager</strong> can additionally set user roles on this entry and edit them.
+            hint_html: A <strong>Previewer</strong> can preview this story.<br>An <strong>Editor</strong> can additionally edit this story.<br>A <strong>Publisher</strong> can additionally publish this story.<br>A <strong>Manager</strong> can additionally set user roles on this story and edit them.
       resource_tabs:
         account_editor_hint: Users who are assigned on an account level are not listed here
         accounts: Accounts
         entries: Stories
+        entry_templates: Story templates
         features: Features
         members: Members
         revisions: Versions
         users: User
       revisions:
         published_until_hint: Leave blank to publish indefinitely.
+        restored: Version restored
       themings:
         additional_cnames_hint: Comma separated list of additional CNAMES. Used only to select the correct redirect URL.
         cname_hint: Used in public sharing URLs.
-        default_author_hint: Default 'author' meta field for entries
-        default_keywords_hint: Default 'keywords' meta field for entries
-        default_publisher_hint: Default 'publisher' meta field for entries
+        default_author_hint: Default 'author' meta field for stories
+        default_keywords_hint: Default 'keywords' meta field for stories
+        default_locale_hint: Default language for stories
+        default_publisher_hint: Default 'publisher' meta field for stories
         home_url_hint: Used for requests to the root path with one of the above CNAMES. Default target location for the home button.
         name: "%{account_name}"
         remove_logo: Remove logo
         show: View
       user:
+        cannot_add: What you want to do is not possible. You need to upgrade.
         none_addable_tooltip: No user available
       users:
         account: Profile
@@ -853,8 +903,8 @@ en:
         delete_account_membership_confirmation: |-
           Really delete the account membership of this user?
 
-          CAUTION: All of the user's entry memberships in this account are also deleted.
-        delete_entry_membership_confirmation: Really delete the entry membership of this user?
+          CAUTION: All of the user's story memberships in this account are also deleted.
+        delete_entry_membership_confirmation: Really delete the story membership of this user?
         delete_me:
           cancel_label: No, do not delete my account!
           delete_label: Delete account
@@ -876,40 +926,41 @@ en:
         no_accounts: No members
         no_entries: No stories
         none: There are no stories.
+        not_allowed_to_see_user_quota: You are not allowed to access the user quota for this account.
         resend_invitation: Resend invitation email
         resent_invitation: The invitation email has been resent.
         roles:
           account_manager: Konto-Administrator
           accounts:
             tooltip:
-              editor: Can edit entries of this account
+              editor: Can edit stories of this account
               manager: Can set roles on this account
-              member: Can be assigned roles on entries of this account
-              previewer: Can preview entries of this account
-              publisher: Can publish entries of this account
+              member: Can be assigned roles on stories of this account
+              previewer: Can preview stories of this account
+              publisher: Can publish stories of this account
           admin: System-Administrator
           editor: Editor
           entries:
             tooltip:
-              editor: Can edit this entry
-              manager: Can set roles on this entry
-              previewer: Can preview this entry
-              publisher: Can publish this entry
+              editor: Can edit this story
+              manager: Can set roles on this story
+              previewer: Can preview this story
+              publisher: Can publish this story
           manager: Manager
           member: Member
           own_account_role:
             tooltip:
-              editor: You can edit entries in this account
-              manager: You can manage user and entries in this account
-              member: You can be assigned roles on entries in this account
-              previewer: You can preview entries in this account
-              publisher: You can publish entries in this account
+              editor: You can edit stories in this account
+              manager: You can manage user and stories in this account
+              member: You can be assigned roles on stories in this account
+              previewer: You can preview stories in this account
+              publisher: You can publish stories in this account
           own_entry_role:
             tooltip:
-              editor: You can edit this entry
-              manager: You can set roles on this entry
-              previewer: You can preview this entry
-              publisher: You can publish this entry
+              editor: You can edit this story
+              manager: You can set roles on this story
+              previewer: You can preview this story
+              publisher: You can publish this story
           previewer: Previewer
           publisher: Publisher
         suspend: Suspend
@@ -920,8 +971,18 @@ en:
       help_entries:
         page_type:
           menu_item: Audio
-          text: "# Audio\n\n*Playing audio-files with controls*\n    \nHere you can combine audio-files with pictures or background videos and\ntext-content. Controls similar to the page type „Video“\nare shown.  In addition to that you can write a\ndescription into an „Infobox“.\n\nExamples of application: interviews, direct quotes, music"
+          text: "# Audio\n\n*Playing audio-files with controls*\n    \nHere you can combine audio-files with pictures or background videos and\ntext-content. Controls similar to the page type \"Video“\nare shown.  In addition to that you can write a\ndescription into an „Infobox“.\n\nVia \"Options\" the appearance of the player can be changed to the visualization of the waveform of an audio file.\n\nExamples of application: interviews, direct quotes, music"
       open: Play audio
+      page_attributes:
+        audio_player_controls_variant:
+          inline_help: The audio page supports different display variants of player controls.
+          label: Player Controls Variante
+          values:
+            default: Standard
+            waveform: Waveform
+        waveform_color:
+          inline_help: Color of the waveform's parts that represents the already played part of the audio.
+          label: Waveform Color
       page_type_category_name: Media
       page_type_description: Audio player with controls
       page_type_name: Audio
@@ -931,30 +992,14 @@ en:
       help_entries:
         page_type:
           menu_item: Background Image/Video
-          text: |-
-            # Background Image/Video
-
-            Full-screen image or video loop and text
-
-            By using the page type „Background-Image/Video“, large pictures
-            or video loops are the background for the text and are paired with a
-            manually adjustable color gradient for an optimal
-            legibility. In order to have an optimal presentation on
-            mobile devices you can adjust the image detail to the
-            display. Optionally the text color can be inverted. This
-            is especially useful for bright background-images.
-
-            Users are able to hide the color-gradient and text in
-            the front-end, if they want to have a view of the
-            background image or video.
-
-            Examples: Presentation, part of a picture gallery,
-            portrait
+          text: "# Background Image/Video\n\n*Full-screen image or video loop and text*\n\nBy using the page type „Background-Image/Video“, large pictures\nor video loops are the background for the text and are paired with a\nmanually adjustable color gradient for an optimal\nlegibility. By adjusting the image section, you can ensure that your picture also shows the relevant section of your subject on mobile devices in portrait mode. \n\nOptionally the text color can be inverted. This\nis especially useful for bright background-images.\n\nUsers are able to hide the color-gradient and text in\nthe front-end, if they want to have a view of the\nbackground image or video.\n\nExamples: Presentation, part of a picture gallery,\nportrait\n\n**Note on sound for background video**: Due to technical restrictions based on the \"Autoplay Policy\" of the browser manufacturers, videos with sound cannot be played automatically on all devices/browsers. \n\nTo enable playback of video loops on mobile devices and in Safari on desktop and tablets, the sound is therefore suppressed. With Chrome this restriction is circumvented by a Unmute button, with Firefox users decide for themselves whether to allow automatic playback of audio."
       page_type_category_name: Basic
       page_type_description: Fullscreen image or video loop with text
       page_type_name: Background image/video
     chapter_hierachy:
       feature_name: Chapter Hierachy
+    classic_loading_spinner:
+      widget_type_name: Classic
     common_page_attributes:
       background_type:
         inline_help: The page background can either display an image or a video loop.
@@ -981,6 +1026,8 @@ en:
         captions: Audio Replacement Text Track
         descriptions: Image Description Text Track
         subtitles: Translation Text Track
+    cookie_notice_bar:
+      widget_type_name: Bar at lower page margin
     default_theme:
       name: Default
     delayed_text_fade_in:
@@ -1017,6 +1064,10 @@ en:
         header: This is an empty Pageflow
         intro: Each Pageflow consist of chapters and pages. The editor panel to your right shows the outline of your story.
         outro: In this area, a live preview will be shown.
+      classic_loading_spinner:
+        widget_type_info_box_text: This is a preview of the classic loading spinner. It is displayed while the page is loading.
+      cookie_notice_bar:
+        widget_type_info_box_text: The notice is displayed when visiting a story that uses Cookies. Cookies are set, if an analytics integration is active or the 'Emphasize new pages' feature has been enabled.
       entries:
         unsupported_browser_hint:
           message: The Pageflow editor does not support the browser version you are using. We recommend upgrading your browser to the most recent version.
@@ -1034,7 +1085,7 @@ en:
       files:
         common_attributes:
           alt:
-            inline_help: A hint describing the contents of the displayed element. Not displayed in the entry, but can be used by screen reader software. Improves accessibility of the content.
+            inline_help: A hint describing the contents of the displayed element. Not displayed in the story, but can be used by screen reader software. Improves accessibility of the content.
             label: Alt-Text
           file_name:
             column_header: File name
@@ -1046,7 +1097,7 @@ en:
               blank: Still blank
               present: 'Present: %v{value}'
             column_header: Rights
-            inline_help: Displayed in copyright area of entry.
+            inline_help: Displayed in copyright area of story.
             label: Rights
           text_tracks:
             label: Subtitles
@@ -1084,6 +1135,8 @@ en:
           audio_files: Audios
           image_files: Images
           video_files: Videos
+      media_loading_spinner:
+        widget_type_info_box_text: This is a preview of the 'Image' loading view. The animation runs while the page is loading.
       nested_files:
         text_track_files:
           delete:
@@ -1111,6 +1164,9 @@ en:
             column_header: Language
             inline_help_html: "<ul><li>The language used in a text track is specified as a two letter code according to ISO 639.1.</li> <li><strong>Examples:</strong> 'en' for English or 'fr' for French.</li> <li>Language codes are often given on the Wikipedia page of a language.</li></ul>"
             label: Language
+      phone_horizontal_slideshow_mode:
+        page_transitions_inline_help: "<br /><br />Horizontal control gestures on phone have been enabled under 'Title and options > Appearance'. On phones, vertical page transitions (i.e. from bottom to top) are automatically turned into horizontal transitions (i.e. from right to left) and vice versa."
+        widget_type_info_box_text: "<p>Change current page using horizontal swipe gestures on phones.</p><p>Vertical page transitions (i.e. from bottom to top) are automatically turned into horizontal transitions (i.e. from right to left) and vice versa.</p><p>In desktop layout and on tablets the setting does not take any effect.</p>"
       quotas:
         loading: Checking quotas...
       templates:
@@ -1185,6 +1241,13 @@ en:
         embedded:
           page_link:
             reset: Reset
+        emulation_mode_button:
+          desktop: Desktop
+          disabled_hint: Not supported by this page type
+          header: 'Preview mode:'
+          phone: Phone
+        entry_preview:
+          navigation_disabled_hint: Page changes not possible in phone preview.
         file_item:
           cancel: Cancel
           confirm: Confirm
@@ -1216,10 +1279,6 @@ en:
           title: Help
         help_button:
           open_help: Open help
-        inputs:
-          reference:
-            edit: DELETED
-            reset: DELETED
         list_blank_slate:
           text: "(No items)"
         list_item:
@@ -1254,15 +1313,15 @@ en:
           ok: OK
           title: Select target page
         publish_entry:
-          already_published_with_password_help: This entry is already published with a password. Leave password field blank to keep the previous password.
-          already_published_without_password_help: This entry is published without a password at the moment. Setting a password will prevent public access from now on.
+          already_published_with_password_help: This story is already published with a password. Leave password field blank to keep the previous password.
+          already_published_without_password_help: This story is published without a password at the moment. Setting a password will prevent public access from now on.
           date: Date
           files_pending_notice: Please wait until all files have been processed and check the results. You may then publish your story.
           not_published_notice: This story is currently not published.
           password: Password
-          password_help: Restrict access to the published version of this entry. Visiters will have to enter a password.
+          password_help: Restrict access to the published version of this story. Visitors will have to enter a password.
           password_protected: Protect with Password
-          previously_published_with_password_help: This entry was published with a password before. Leave password field blank to keep the previous password.
+          previously_published_with_password_help: This story was published with a password before. Leave password field blank to keep the previous password.
           publish: Publish
           publish_current: Publish current version
           publish_success: Your story has been sucessfully published.
@@ -1294,6 +1353,8 @@ en:
         srclang_missing: "(Missing)"
       themes:
         header: Themes
+      title_loading_spinner:
+        widget_type_info_box_text: This is a preview of the 'Title and Image' loading view. The animation runs while the page is loading.
       views:
         chapter_item_view:
           chapter: Chapter
@@ -1303,16 +1364,19 @@ en:
             Really delete this chapter including ALL its pages?
 
             This operation cannot be undone.
+        edit_configuration:
+          back: Outline
+          confirm_destroy: Really delete this record? This action cannot be undone.
+          destroy: Delete
+          retry: Retry
+          save_error: Saving the record failed.
         edit_entry_view:
-          cannot_publish: You do not have sufficient rights to publish this entry.
-        edit_page_link_view:
-          default_page_transition: "(Default)"
+          cannot_publish: You do not have sufficient rights to publish this story.
         edit_page_view:
           confirm_destroy: Really delete this page?
         edit_storyline_view:
           cannot_destroy: Only empty storylines can be deleted.
           confirm_destroy: Really delete storyline
-          default_parent_page_transition: "(Default)"
         editor_views:
           files_pending_warning: You are currently uploading files. All uploads will be canceled if you leave this page.
           hide_editor: Hide editor panel
@@ -1324,6 +1388,10 @@ en:
           blank: "-"
         files_view:
           add: Add
+          authenticating: Authenticating
+          import: Import
+          importer:
+            heading: Import files from
           reuse: Reuse
           upload: Upload
         filtered_files_view:
@@ -1349,28 +1417,72 @@ en:
         storylines_picker_view:
           label: Storyline
           without_parent_page: Without parent page
+      widgets:
+        attributes:
+          media_loading_spinner:
+            animation_duration:
+              inline_help: Controls the animation duration of loading spinner.
+              label: Animation duration
+            blur_strength:
+              inline_help: Control the bluriness of background image.
+              label: Blur Strength
+            custom_background_image_id:
+              inline_help: By default, the background image of the first page is used.
+              label: Background Image
+            remove_logo:
+              label: Remove logo
+          title_loading_spinner:
+            animation_duration:
+              inline_help: Controls the animation duration of loading spinner.
+              label: Animation duration
+            blur_strength:
+              inline_help: Control the bluriness of background image.
+              label: Blur Strength
+            custom_background_image_id:
+              inline_help: By default the background image of the first page is used.
+              label: Background image
+            subtitle:
+              inline_help: Subtitle to display in loading view.
+              label: Subtitle
+            title:
+              inline_help: Title to display in loading view. Defaults to story title.
+              label: Title
+    editor_emulation_mode:
+      feature_name: Editor phone emulation mode
     entry:
       duplicated_title: Copy of %{title}
+    entry_types:
+      paged:
+        editor:
+          entry_metadata_configuration_attributes:
+            emphasize_chapter_beginning:
+              inline_help: This option emphasizes the title of the first page of a chapter.
+              label: Emphasize chapter beginning
+            emphasize_new_pages:
+              inline_help: At the beginning of a Pageflow an info box shows news pages that were created since the last visit.
+              label: Emphasize new pages
+            home_button_enabled:
+              inline_help: Pageflow can display a button in the navigation that links to an external website, for example back to the website from which you linked the Pageflow.
+              label: Show 'Home' button
+            home_button_enabled_disabled:
+              inline_help: This option is not available for your theme.
+            home_url:
+              inline_help: URL of your home page. Leave empty to use your account's default setting.
+              label: "'Home' button URL"
+            home_url_disabled:
+              inline_help: This option is not available for your theme.
+            manual_start:
+              inline_help: Decide if tips or advice should be shown at the beginning of your Pageflow.
+              label: Show instruction overlay
+            overview_button_enabled:
+              inline_help: The overview displays chapters and pages of the main storyline.
+              label: Show 'Overview' button
+            overview_button_enabled_disabled:
+              inline_help: This option is not available for your theme.
     help_entries:
-      atmo:
-        menu_item: Atmo Audio
-        text: |-
-          # Atmo Audio
-
-          This feature lets you add background audio to every page regardless of its page type. You can define if a sound should play only for one page or continue playing for more pages without interruption. Simply select the same atmo audio file for some adjacent pages.
-
-          That way chapters can be seperated acoustically and pages that belong together can be weaved to a stronger unit.
-
-          For the page type „Video“ there is a special option to pause background audio or continue at lower volume while the video is playing.
-
-          You find the atmo settings on the „Options“ tab of each page.
-
-          Should you ever feel distracted by the atmo audio while working on your entry, you can use the hot key „Alt + a“ to temporarily mute it. Simply press „Alt + a“ again to reactivate atmo audio.
-
-          CAUTION: Atmo audio does not play on mobile devices.
       files:
         menu_item: Manage Files
-        text: |
+        text: |-
           # Manage Files
 
           Pageflow processes all major media formats (photo, audio,
@@ -1401,13 +1513,6 @@ en:
           finished. You can therefore continue your work during the
           loading process.
 
-          ## Copyrights of Files
-
-          If you click on the thumbnail of a media file (picture,
-          video, audio), you can add information with regards to its
-          copyright. This information is shown automatically in the
-          legal notice.
-
           ## Reuse Files
 
           Videos, audio files and pictures can be used in more than
@@ -1415,68 +1520,62 @@ en:
           uploaded several times. Click on „Manage Files“ and on
           „Add“/„Reuse“, to search for files in other articles and add
           them to a new one.
+
+          ## Edit File Settings and Copyright
+
+          If you click on the thumbnail of a media file (picture,
+          video, audio), you can add information with regards to its
+          copyright. This information is shown automatically in the
+          legal notice.
       meta_data:
-        menu_item: Title and Options
+        general:
+          menu_item: General
+          text: |
+            # General
+
+            ## Title of the Pageflow
+
+            Here you can choose a title for your Pageflow. It will be
+            shown on the title bar of the browser window. It also acts
+            as an indicator for search engines once the report is
+            published.
+
+            ## Language
+
+            Decide in which language your Pageflow should be displayed. This refers to the frontend text such as multimedia tips, scroll-indicators, the overview and the legal notice.
+
+            ## Credits
+            Here you can enter your imprint information in free text. In addition, image rights can be assigned for all files under "Manage files", which are then automatically displayed in the imprint.
+        menu_item: Titel and Optionen
+        social:
+          menu_item: Social
+          text: |
+            # Social
+
+            ## Social Sharing Picture
+
+            Choose a picture, which should be shown, if your Pageflow is
+            shared in social networks.
+
+            ## Summary
+
+            Here you can write a description, which is shown, when your
+            Pageflow is shared in social networks.
+
+            ## Social Sharing URL
+
+            If contributions are embedded in your own web pages (with
+            a different URL), you can specify an individual URL here
+            that is to be used when sharing the contribution.
+
+            ## Social Share Links
+
+            Determine which share buttons should be displayed when
+            clicking on the "Share function".
         text: |
           # Title and Options
 
-          ## General
-
-          ### Title of the Pageflow
-
-          Here you can choose a title for your Pageflow. It will be
-          shown on the title bar of the browser window. It also acts
-          as an indicator for search engines once the report is
-          published.
-
-          ### Language
-
-          Decide in which language your Pageflow should be
-          displayed. This refers to text which cannot be edited - like
-          multimedia tips, scroll-indicators, the overview and the
-          legal notice.
-
-          ## Appearance
-
-          ### Multimedia tips before the start
-
-          Decide if tips or advice should be shown at the beginning of
-          your Pageflow.
-
-          ### Highlighting chapter beginnings
-
-          This option lets the title of the first page of a chapter
-          appear in a bigger font.
-
-          ### Highlighting new pages
-
-          At the beginning of a Pageflow an info-box shows new pages
-          that were created since the last visit.
-
-          ### Display Home-Button
-
-          You can have a button in the navigation, which hyperlinks to
-          an external website, for example back to the website from
-          which you hyperlinked to the Pageflow.
-
-          ### Navigation
-
-          Choose between two forms of navigation: The navigation with
-          a progress bar or the navigation with thumbnails. Please
-          note, that due to the lack of space on mobile devices only
-          the icon „Overview“ is shown.
-
-          ## Social
-
-          ### Social Sharing Picture
-
-          Choose a picture, which should be shown, if your Pageflow is
-          shared in social networks.
-
-          ### Summary
-
-          Here you can write a description, which is shown, when your
-          Pageflow is shared in social networks.
+          General settings for the entry. Please select a sub item on the left.
       outline:
         menu_item: Chapters and Pages
         text: |-
@@ -1502,52 +1601,6 @@ en:
           is no structure of chapters. The chapter and the title of
           this chapter are consequently not shown in the
           overview/navigation.
-      overview:
-        menu_item: Overview
-        text: |-
-          # Overview
-
-          This is Pageflow’s editing platform. The division of the
-          screen into two allows you to edit your Pageflow and see a
-          preview at the same time. The editor shows modifications and
-          newly selected files directly and saves them automatically.
-
-          The sidebar can be hidden or shown. You can change the size
-          of the preview-window by pulling the sidebar to the right or
-          the left. If the preview-window is long and narrow like ´ a
-          smartphone, you will only be able to see the „overview“ icon
-          and not the entire navigation. This is due to lack of space.
-
-          The navigation is divided into four parts:
-
-          ## Title and Options
-
-          Under „Title and Options“ you can set up basic appearance
-          parameters as well as the title, language and legal
-          notice. You can also decide which content should be
-          displayed when sharing the report on social media platforms.
-
-          For more details see: [Title and Options](#pageflow.help_entries.meta_data)
-
-          ## Manage Files
-
-          Under „Manage Files“ you can upload your media files, which
-          you want to use in Pageflow. Furthermore you can reuse
-          videos, photos and audio-files that have already been
-          uploaded.
-
-          For more details see: [Manage Files](#pageflow.help_entries.files)
-
-          ## Outline
-
-          Via the „Outline“ you can add chapters and pages - the
-          actual content. Per Drag and Drop you can resort the pages
-          and chapters any time.
-
-          For more details see: [Chapter and Pages](#pageflow.help_entries.outline)
-      page_options:
-        menu_item: General Page Options
-        text: "# General Page Options\n\n### Title\n\nHere you can add the title of a particular page. This\ntitle is not only the headline of the text on the page, it\nalso functions as the title in the navigation and\noverview. If a single page is shared in social networks,\nthis title is also the title of the social media post.\n\n### Hide the title\n\nOptionally you can hide the title. Thus the title is not shown as the\nheading of the text body. For the identification of the page it\nremains visible in the navigation, overview and on social media posts.\n\n### Tagline and Subtitle\n\nHere you can optionally enter a tagline and/or a\nsubtitle. If you click on „Hide title“ the tagline and\nsubtitle are not shown either.\n\n### Text\n\nThe text-block can be formatted with the buttons underneath\nthe input field. [B= bold / I=italic / U=underlined /\ninfinity symbol= Link/URL to an external website]\n\nAll changes are visible in the left front-end-view as soon\nas you leave the appropriate input field in the editor.\n\n### Textposition\n\nDecide if the text should be shown on the left or right side.\n\n### Opacity of the gradient\n\nThe opacity of the gradient improves the legibility of\nthe text on background-videos or pictures.\n\nYou can use the slider to darken or lighten up the\nbackground until the contrast between text and background is\noptimal.\n\n### Invert colors\n\nIf you invert the colors, „bright“ and „dark“ are\ninterchanged. Thus the normally white font changes into\nblack.\n\nA general rule: Bright font for dark pictures, dark font for\nbright pictures.\n\n### Thumbnail\n\nThe thumbnail replaces the automatically generated\npreview-picture in the navigation and overview.\n\n### Display in navigation\n\nIf this option is not taken, the particular page is not\nrepresented in the navigation and therefore cannot be\nreached through it.  You can use this option if a page is\nsupposed to read more like a subpage of another page.\n\n### Transition effect\n\nThere are different scroll effects, which are visible when users enter or leave pages. You can use vertical transitions like „crossfade“ or „cut“ or „Fade to black“. Besides this you also can choose horizontal scrolling from right or left. You can determine which effect should be used for each individual page.\n\n### Fade in text after delay\n\nDefine whether text and gradient of a page should appear with a delay. \nUsers will first see the background image, then title, tagline and subtitle until finally the content text will be displayed.\n\nThere are three different durations of delay: short = 1 second, medium = 3 seconds, long = 5 seconds.\n\nThis feature fits best for intros or beginnings of chapters.\n\n### Description for the overview\n\nYou can enter a text, which appears when the user navigates\nwith the mouse over the particular page. This text matches\nwith the mouse-over-text for the page-type „Page References“\nas well as with the text, which appears when you share the\nPageflow in social networks."
       page_types:
         menu_item: Page Types
         text: |
@@ -1559,10 +1612,7 @@ en:
           click on a page type on the left column.
       publishing:
         menu_item: Publishing
-        text: "# Publishing\n\nClick on the „Publish“ button to publish your Pageflow. A\nPageflow can be published at any point in time. \n\nBesides this, there is the possibility to publish Pageflows with \na password protection. Just activate „Protect with password“. \nPageflow uses the name of the account as user name and \nautomatically generates a password, which can be changed afterwords. \n\nAlready published stories can also be protected with a password by \npublishing another version - the other way round works as well. \nFor this please just click on the „Publishing“ button. The following \nsteps will then be shown and explained within the dialog window.\n\nPublished\nPageflows can also be unpublished manually at any time. If a\nPageflow has already been published, changes will not be\nshown until you publish your report again.  A Pageflow can\nonly be edited by one author at one time.\n\nThumbnail for embedding the Pageflow on external websites\nAfter publishing your Pageflow, the system generates a\nthumbnail, which can be embedded as an iframe to the\nhyperlink of another website. By means of the code, the size\nof the iframe can be adjusted. The minimum size is a height\n150px and a width of 220px."
-      storylines:
-        menu_item: Storylines
-        text: "# Storylines\n\nIn addition to linear narrations from top to bottom, further storylines can be used as non linear excursions to enlarge upon parts of a story. A „Storyline“ consists of chapters and pages, which users scroll through. Distinguishable is the so called main storyline from further subordinate ones. The user starts off in the main storyline and can then navigate to different excursions.\n\nTo create such an excursion from the main storyline use one of the „Link“ pages (Mosaic, Collage, Hotspot) and create the desired connections via „Links“.\n\nBy choosing a „Parent page“ you can determine to which page users return after scrolling the storyline´s last page.\n\nTransitions to subordinate storylines are visually supported by a horizontal animation as the default setting for entering and leaving. \n\nStorylines are created by clicking onto the plus button next to the storyline menu. Thereby a new chapter opens automatically in which further pages can be added. \n\n\n### Parent pages\n\nIn every subordinate  storyline a „Parent page“ must be determined to define where users land when scrolling back.\n\nThis target page can be chosen by clicking on the pen symbol next to the storyline menu. When a „Parent page“ is defined, a back button will be shown automatically in the subordinate storyline that will always lead users back to the „Parent page“.\n\n\n### Chapter hierarchy\n\nThe use of more than one „subordinary“ storylines and the definition of „Parent pages“ leads to a chapter hierarchy as known from books:\n\n1. (Main storyline), 1.1. (Superior sub storyline), 1.1.1. (Subordinate sub storyline) and so on.\n\nThis hierarchy can be edited afterwards by clicking on the pen symbol next to the storyline menu. A subordinate storyline can be turned into the main storyline as well.\n\n\n### Scroll successors\n\nIf you want to lead users from a last page of a subordinate chapter (1.1.1) to another position than\nthe „Parent page“ (e.g. to 2.1) you can define a „Scroll successor“. Therefore click on the blue pen symbol within the storyline settings. As an example the following sequence might be imaginable: 1 -> 1.1 -> 1.1.1 -> 2.1\n\nAttention: While editing only the selected chapter will be shown in the sidebar. To switch to the other chapters click onto the storyline menu."
+        text: "# Publishing\n\nClick on the „Publish“ button to publish your Pageflow. An entry can either be published for an unlimited period of time or until a specific deadline.\n\nBesides this, there is the possibility to publish Pageflows with \na password protection. Just activate „Protect with password“. \nPageflow uses the name of the account as user name and \nautomatically generates a password, which can be changed afterwords. \n\nAlready published stories can also be protected with a password by \npublishing another version - the other way round works as well. \nFor this please just click on the „Publishing“ button. The following \nsteps will then be shown and explained within the dialog window.\n\n### Changes After Publishing\nPublished Pageflows can also be depublished manually at any time. If a\nPageflow has already been published, changes will not be\nshown until you publish your report again.  A Pageflow can\nonly be edited by one author at one time.\n\n### Embedding as iframe\nPublished articles can also be embedded in your own website. You can find more information in this [article](https://pageflow.freshdesk.com/support/solutions/articles/11000002744)  \n\n### Embedding iframe Teaser\nThumbnail for embedding the Pageflow on external websites\nAfter publishing your Pageflow, the system generates a\nthumbnail, which can be embedded as an iframe to the\nhyperlink of another website. By means of the code, the size of the iframe can be adjusted. The minimum size is a height 150px and a width of 220px."
       text_tracks:
         menu_item: Text tracks
         text: |-
@@ -1596,9 +1646,9 @@ en:
 
 
           * If a file has a text track of kind "translation" in the
-            language of the entry, it is displayed as subtitle
+            language of the story, it is displayed as subtitle
             automatically. This is meant for people who are able to
-            understand the language of the entry, but not the language
+            understand the language of the story, but not the language
             spoken in the video or audio.
 
           * If instead the file has a text track of kind "audio
@@ -1624,6 +1674,9 @@ en:
         image_rights: Credits
     highdef_video_encoding:
       feature_name: Full HD and 4K videos
+    initial_password:
+      submit: Save and sign in
+      title: Set your password
     invalid_transition: Invalid transition
     languages:
       ar: Arabic
@@ -1633,23 +1686,33 @@ en:
       el: Greek
       en: English
       es: Spanish
+      fi: Finnish
       fr: French
       fy: Frisian
       hi: Hindi
       it: Italian
+      ja: Japanese
       lb: Letzeburgesch
+      nb: Norsk Bokmål
       nl: Dutch
+      nn: Norsk Nynorsk
+      'no': Norsk
       pl: Polish
       pt: Portuguese
       rm: Romansh
       ru: Russian
+      se: Northern Sami
       sr: Serbian
+      sv: Swedish
       tr: Turkish
       unknown: "(Unknown)"
       zh: Chinese
+    media_loading_spinner:
+      widget_type_name: Media
     page_transitions:
       crossfade: Crossfade
       cut: Cut
+      default: "(Default)"
       fade: Fade
       fade_to_black: Fade to black
       scroll: Scroll
@@ -1657,14 +1720,20 @@ en:
       scroll_over_from_left: Scroll over from left
       scroll_over_from_right: Scroll over from right
       scroll_right: Scroll right
+    paged_entry_type:
+      feature_name: Story type page-based/classic
+    phone_horizontal_slideshow_mode:
+      feature_name: Horizontal swipe on phone
     quotas:
       exhausted: Quota exhausted
+    scrolled_entry_type:
+      feature_name: Story type scrolling continuously/Pageflow Next
     selectable_themes:
       feature_name: Editor theme selection
     storyline_attributes:
       main:
-        inline_help: Turns the first page of this storyline into the start page of the entry.
-        inline_help_disabled: The first page of this storyline is the start page of the entry.
+        inline_help: Turns the first page of this storyline into the start page of the story.
+        inline_help_disabled: The first page of this storyline is the start page of the story.
         label: Main storyline
       navigation_bar_mode:
         label: Navigation bar mode
@@ -1687,13 +1756,21 @@ en:
       feature_name: Storylines
       main: Main storyline
       untitled: Unnamed storyline
+    structured_data:
+      feature_name: Embedded structured data
+    title_loading_spinner:
+      feature_name: "'Title and image' loading view"
+      widget_type_name: Title and Image
     ui:
       configuration_editor:
         tabs:
+          cookie_notice_bar: Cookie Notice
           files: Files
           general: General
           links: Links
+          loading_spinner: Loading View
           options: Options
+          phone_horizontal_slideshow_mode: Horizontal swipe on phone
           social: Social
           widgets: Appearance
       inline_help:
@@ -1702,18 +1779,10 @@ en:
         pageflow/entry:
           author: The author's name.
           credits: Will be shown in the info box.
-          emphasize_chapter_beginning: This option emphasizes the title of the first page of a chapter.
-          emphasize_new_pages: At the beginning of a Pageflow an info-box shows news pages that were created since the last visit.
-          home_button_enabled: Pageflow can display a button in the navigation, which hyperlinks to an external website, for example back to the website from which you hyperlinked to the Pageflow.
-          home_button_enabled_disabled: This option is not available for your theme.
-          home_url: URL of your home page. Leave empty to use your accounts default setting.
-          home_url_disabled: This option is not available for your theme.
           keywords: Keywords as a suggestion for search engines.
-          manual_start: Decide if tips or advice should be shown at the beginning of your Pageflow.
-          overview_button_enabled: The overview displays chapters and pages of the main storyline.
-          overview_button_enabled_disabled: This option is not available for your theme.
           publisher: The publisher's name or company name.
-          share_url: URL to share via social media buttons. Leave blank to use URL of published entry.
+          share_providers: Social media platforms to be listed in the "Share"-dialog of the entry
+          share_url: URL to share via social media buttons. Leave blank to use URL of published story.
           summary: Here you can write a description, which is shown, when your Pageflow is shared in social networks.
           title: Here you can choose a title for your Pageflow. It will be shown on the title bar of the browser window. It also acts as an indicator for search engines once the report is published.
         pageflow/page:
@@ -1726,6 +1795,7 @@ en:
             The opacity of the gradient improves the legibility of the text on background-videos or pictures.
 
             You can use the slider to darken or lighten up the background until the contrast between text and background is optimal.
+          hide_logo: Hide logo on current page
           invert: |-
             If you invert the colors, „bright“ and „dark“ are interchanged. Thus the normally white font changes into black.
 
@@ -1750,8 +1820,17 @@ en:
             bold: Bold
             cancel: Cancel
             create_link: Insert link
+            insert_ordered_list: Insert ordered list
+            insert_unordered_list: Insert unordered list
             italic: Italic
-            ok: Ok
+            link_type:
+              page_link: Page
+              url: URL
+            open_in_new_tab: Open in new tab
+            open_in_new_tab_help: Recommended. Otherwise the entry has to be reloaded when returning from the link. Please note that inside the editor preview links always open in a new tab.
+            remove_link: Remove link
+            save: Save
+            target: Target
             underline: Underline
             url: URL
           url_display:
@@ -1764,6 +1843,8 @@ en:
         inputs:
           file_input_view:
             none: "(none)"
+          json_input_view:
+            invalid: Invalid JSON data.
           proxy_url_input_view:
             http_error: The given URL could not be fetched. (The server answered with a HTTP status code ' %{status}')
             url_validation: Checking URL...
@@ -1771,6 +1852,7 @@ en:
             none: "(none)"
             placeholder: Default (%{text})
           text_input_view:
+            max_characters_exceeded: Maximum number of characters exceeded (%{max_length})
             required_field: Required field
           url_input_view:
             required_field: Required field
@@ -1778,6 +1860,8 @@ en:
             url_hint: 'URL must start with http:// '
             url_hint_https: URL must start with http:// or https://
     unauthorized: You are not authorized to view this page.
+    unmute_button:
+      widget_type_name: Unmute button
     user_mailer:
       invitation:
         ending: Thank you and have fun,
@@ -1789,24 +1873,32 @@ en:
       help_entries:
         page_type:
           menu_item: Video
-          text: "# Video\n\n*Playing a video with control*\n    \nIn contrast to „Background-Videos“ the text elements fade\nout after a few seconds, in order to draw attention to the\nvideo. With controls the user can start and pause the\nvideo or even fast-forward and rewind it. You can choose\nwhether the video should start automatically as soon as\nthe page is opened.\n\nAs an alternative to the normal text input, you can write\na description into an „Infobox“ with text.\n\nOn the „Options“ tab you can activate auto-scrolling to the next page at the end of a video. \nThis can be useful to create a seamless transition.\n\nExamples of application: Videos of all kinds, interviews,\nportraits"
+          text: "# Video\n\n*Playing a video with control*\n    \nIn contrast to „Background-Videos“ the text elements fade\nout after a few seconds, in order to draw attention to the\nvideo. With controls the user can start and pause the\nvideo or even fast-forward and rewind it. You can choose\nwhether the video should start automatically as soon as\nthe page is opened.\n\nAs an alternative to the normal text input, you can write\na description into an „Infobox“ with text.\n\nOn the „Options“ tab you can activate auto-scrolling to the next page at the end of a video. \nThis can be useful to create a seamless transition.\n\nExamples of application: Videos of all kinds, interviews, portraits\n\n*Note on autoplay for videos: Due to technical restrictions, based on the \"Autoplay Policy\" of the browser manufacturers, videos with sound cannot be played automatically on all devices/browsers. On Safari and mobile devices, videos can only be started manually."
       page_attributes:
         mobile_poster_image_id:
           inline_help: Displayed on mobile devices before the video starts.
       page_type_category_name: Media
       page_type_description: Video player with controls
       page_type_name: Video
+    waveform_player_controls:
+      feature_name: Waveform player controls variant for audio page
     widgets:
       none: "(none)"
       roles:
         analytics: Tracking
+        background_media_control: Background media control
+        cookie_notice: Cookie Notice
+        loading_spinner: Loading View
         mobile_navigation: Mobile navigation
         navigation: Navigation bar
         player_controls: Player Controls
+        slideshow_mode: Control gestures
       type_names:
         classic_player_controls: Classic
         default_mobile_navigation: Navigation bar with thumbnails
         default_navigation: Navigation bar with thumbnails
+        default_slideshow_mode: Vertical scoll/swipe
+        phone_horizontal_slideshow_mode: Horizontal swipe on phone
         slim_player_controls: Minimal
   support:
     array:

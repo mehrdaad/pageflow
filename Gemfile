@@ -7,18 +7,27 @@ gem 'rails', Pageflow::RailsVersion.detect
 
 gem 'pageflow-support', path: 'spec/support'
 
-gem 'state_machine', git: 'https://github.com/codevise/state_machine.git', branch: 'master'
-
-# Ensure that teaspoon is required via Bundler.require inside the
-# dummy app. Otherwise teaspoon fails to initialize correctly.
-gem 'teaspoon-mocha', git: 'https://github.com/codevise/teaspoon', branch: 'pageflow'
-
 gem 'spring-commands-rspec', group: :development
-gem 'spring-commands-teaspoon', group: :development
-
-gem 'pageflow-theme-doc-publisher', git: 'https://github.com/tf/pageflow-theme-doc-publisher'
 
 gem 'coveralls', require: false
 
 # Early failure output
 gem 'rspec-instafail', '~> 0.4.0', require: false
+
+gem 'bootsnap', require: false
+
+group :development do
+  gem 'listen'
+end
+
+# Required for XML serialization in Active Admin
+gem 'activemodel-serializers-xml'
+
+# Make webpacker available in specs. Host applications that want to
+# use webpacker need to add it to their Gemfile themselves. Requiring
+# webpacker in an engine file (like we normally do) would force all
+# host application to install webpacker.
+gem 'webpacker'
+
+# Make tests fail on JS errors
+gem 'capybara-chromedriver-logger', git: 'https://github.com/codevise/capybara-chromedriver-logger', branch: 'do-not-raise-on-filtered-errors', require: false

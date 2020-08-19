@@ -1,0 +1,15 @@
+.backdrop {
+  composes: clip from '../utils.module.css';
+  position: absolute;
+  height: 100%;
+}
+
+.backdropInner {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

@@ -2,27 +2,33 @@ module Pageflow
   class DraftEntry
     include ActiveModel::Conversion
 
+    class InvalidForeignKeyCustomAttributeError < StandardError; end
+
     attr_reader :entry, :draft
 
     delegate(:id, :slug,
+             :entry_type,
              :edit_lock, :account, :theming, :slug,
              :enabled_feature_names,
              :published_until, :published?,
              :password_digest,
              :to_model, :to_key, :persisted?, :to_json,
+             :first_published_at,
+             :type_name,
              :to => :entry)
 
-    delegate(:title, :summary, :credits, :manual_start,
+    delegate(:title, :summary, :credits,
              :widgets,
              :storylines, :main_storyline_chapters, :chapters, :pages,
-             :emphasize_chapter_beginning,
-             :emphasize_new_pages,
              :share_url, :share_image_id, :share_image_x, :share_image_y,
-             :find_files, :find_file,
+             :share_providers, :active_share_providers,
+             :find_files, :find_file, :find_file_by_perma_id,
              :image_files, :video_files, :audio_files,
              :locale,
              :author, :publisher, :keywords,
              :theme,
+             :published_at,
+             :configuration,
              :to => :draft)
 
     def initialize(entry, draft = nil)
@@ -30,17 +36,22 @@ module Pageflow
       @draft = draft || entry.draft
     end
 
+    alias revision draft
+
     # So we can always get to the original Entry title.
     def entry_title
       entry.title
     end
 
-    def create_file(model, attributes)
-      file = model.create(attributes.except(:configuration)) do |f|
+    def create_file!(file_type, attributes)
+      check_foreign_key_custom_attributes(file_type.custom_attributes, attributes)
+
+      file = file_type.model.create!(attributes.except(:configuration)) do |f|
         f.entry = entry
       end
 
-      usage = @draft.file_usages.create(file: file, configuration: attributes[:configuration])
+      usage = @draft.file_usages.create_with_lock!(file: file,
+                                                   configuration: attributes[:configuration])
       UsedFile.new(file, usage)
     end
 
@@ -57,7 +68,7 @@ module Pageflow
           .destroy_all
       end
 
-      file.destroy if file.usages.empty?
+      file.destroy if file.usages.reload.empty?
     end
 
     def use_file(file)
@@ -103,8 +114,40 @@ module Pageflow
       OverviewButton.new(draft)
     end
 
+    def manual_start
+      revision.configuration['manual_start']
+    end
+
+    def emphasize_chapter_beginning
+      revision.configuration['emphasize_chapter_beginning']
+    end
+
+    def emphasize_new_pages
+      revision.configuration['emphasize_new_pages']
+    end
+
     def resolve_widgets(options = {})
       widgets.resolve(Pageflow.config_for(entry), options)
+    end
+
+    private
+
+    def check_foreign_key_custom_attributes(custom_attributes, attributes)
+      custom_attributes
+        .each do |attribute_name, options|
+          file_type = options[:model]
+          file_id = attributes[attribute_name]
+
+          next if !file_type || file_is_used(file_type, file_id)
+
+          raise(InvalidForeignKeyCustomAttributeError,
+                "Custom attribute #{attribute_name} references #{file_type} #{file_id} " \
+                'which is not used in this revsion')
+        end
+    end
+
+    def file_is_used(file_type, file_id)
+      draft.file_usages.where(file_type: file_type, file_id: file_id).exists?
     end
   end
 end

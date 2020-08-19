@@ -11,7 +11,7 @@ module Pageflow
     friendly_id :slug_candidates, :use => [:finders, :slugged]
 
     belongs_to :account, counter_cache: true
-    belongs_to :folder
+    belongs_to :folder, optional: true
     belongs_to :theming
 
     has_many :revisions, -> { order('frozen_at DESC') }
@@ -26,6 +26,8 @@ module Pageflow
     has_many :video_files
     has_many :audio_files
 
+    has_many :imports, class_name: 'Pageflow::FileImport', dependent: :destroy
+
     has_one :draft, -> { editable }, :class_name => 'Revision'
     has_one :published_revision, -> { published }, :class_name => 'Revision'
 
@@ -35,6 +37,7 @@ module Pageflow
 
     validates :account, :theming, :presence => true
     validates :title, presence: true
+    validate :entry_type_is_available_for_account
     validate :folder_belongs_to_same_account
 
     scope :editing, -> { joins(:edit_lock).merge(Pageflow::EditLock.active) }
@@ -49,7 +52,18 @@ module Pageflow
     after_create unless: :skip_draft_creation do
       create_draft!
       draft.storylines.create!(configuration: {main: true})
-      theming.copy_defaults_to(draft)
+      entry_template.copy_defaults_to(draft)
+    end
+
+    def entry_template
+      @entry_template ||= EntryTemplate.find_or_initialize_by(
+        account_id: account.id,
+        entry_type_name: type_name
+      )
+    end
+
+    def entry_type
+      Pageflow.config.entry_types.find_by_name!(type_name)
     end
 
     def edit_lock
@@ -124,6 +138,12 @@ module Pageflow
 
     def folder_belongs_to_same_account
       errors.add(:folder, :must_be_same_account) if folder.present? && folder.account_id != account_id
+    end
+
+    def entry_type_is_available_for_account
+      return if Pageflow.config_for(account).entry_types.map(&:name).include?(type_name)
+
+      errors.add(:type_name, :must_be_available_for_account, type_name: type_name)
     end
 
     def update_password!(options)

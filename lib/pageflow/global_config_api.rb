@@ -44,9 +44,17 @@ module Pageflow
     # @return [Configuration]
     # @since 0.9
     def config_for(target)
-      build_config do |config|
-        config.enable_features(target.enabled_feature_names)
+      config = build_config(
+        target.respond_to?(:entry_type) && target.entry_type.name
+      ) do |c|
+        c.enable_features(target.enabled_feature_names(c))
       end
+
+      if target.respond_to?(:entry_type)
+        config = Configuration::ConfigView.new(config, target.entry_type)
+      end
+
+      config
     end
 
     # Register a block which shall be called after any configuration
@@ -99,8 +107,8 @@ module Pageflow
 
     private
 
-    def build_config(&block)
-      Configuration.new.tap do |config|
+    def build_config(target_type_name = nil)
+      Configuration.new(target_type_name).tap do |config|
         @configure_blocks ||= []
         @after_configure_blocks ||= []
 

@@ -1,0 +1,16 @@
+@value fade-duration from './values.module.css';
+
+.backdrop {
+  position: sticky;
+  top: 0;
+  height: 0;
+}
+
+.foreground {
+  transition: opacity fade-duration ease, visibility fade-duration;
+}
+
+.foreground-above {
+  opacity: 0;
+  visibility: hidden;
+}

@@ -1,0 +1,22 @@
+.Foreground {
+  position: relative;
+  z-index: 3;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fullFadeHeight {
+  min-height: 51vh;
+}
+
+.fullHeight {
+  min-height: 100vh;
+}
+
+.paddingBottom {
+  padding-bottom: 3em;
+}

@@ -1,0 +1,228 @@
+@value selectionColor from './colors.module.css';
+
+.upper_section {
+    background: #50514f;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: normal;
+}
+
+.lower_section {
+    background: #A2A2A2;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: normal;
+}
+
+.upper_background, .lower_background {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.active {
+    background: selectionColor !important;
+}
+
+.active div,
+.active .extended_option {
+    color: #ffffff;
+}
+
+.extended_option {
+    display: none !important;
+}
+
+.active .extended_option {
+    display: flex !important;
+    height: auto;
+    width: 82.5%;
+    align-items: center;
+    padding: 5% 2.5%;
+    padding-left: 15%;
+}
+
+.extended_option input {
+    opacity: 1 !important;
+    visibility: hidden;
+    position: absolute;
+    left: -15px;
+    top: 8px;
+    width: auto;
+}
+
+.container.container_with_option label:first-child {
+    padding-bottom: 10px;
+}
+
+.active .extended_option input:before {
+    visibility: visible;
+    display: block;
+    content: ' ';
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjZmZmZmZmIj48cGF0aCBkPSJNMjIgMnYyMGgtMjB2LTIwaDIwem0yLTJoLTI0djI0aDI0di0yNHoiLz48L3N2Zz4=);
+    background-size: 15px 15px;
+    height: 15px;
+    width: 15px;
+    position: absolute;
+    left: 30px;
+    top: 4px;
+}
+
+.active .extended_option.active input:before {
+    visibility: visible;
+    display: block;
+    content: ' ';
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTIyIDJ2MjBoLTIwdi0yMGgyMHptMi0yaC0yNHYyNGgyNHYtMjR6bS01LjU0MSA4LjQwOWwtMS40MjItMS40MDktNy4wMjEgNy4xODMtMy4wOC0yLjkzNy0xLjM5NSAxLjQzNSA0LjUgNC4zMTkgOC40MTgtOC41OTF6Ii8+PC9zdmc+);
+    background-size: 15px 15px;
+    height: 15px;
+    width: 15px;
+    position: absolute;
+    left: 30px;
+    top: 4px;
+}
+
+.container {
+    height: 90px;
+    display: flex !important;
+    align-items: center;
+    border-top: 1px solid #ffffff;
+    background: #e5e5e5;
+}
+.container:hover {
+     background: #ddd;
+}
+
+.container label:first-child {
+    height: 60px;
+    width: 100%;
+    padding: 15px 0;
+}
+
+.container_with_option.active {
+    height: auto;
+    flex-direction: column;
+}
+
+.transition {
+    height: 100%;
+    width: 100%;
+    display: flex;
+}
+
+
+/*Fade AND Fade Background Upper*/
+.container:hover .fadeBg .upper_section {
+    animation: FadeA 4s linear infinite;
+}
+.container:hover .fadeBg .lower_section {
+    animation: FadeB 4s linear infinite;
+}
+
+/*Scroll, Scroll Over, Reveal, AND Fade Background Lower*/
+.container:hover .scroll .upper_section,
+.container:hover .scroll .lower_section,
+.container:hover .scrollOver .lower_section,
+.container:hover .reveal .upper_section{
+    animation: Translate 2s linear infinite;
+}
+
+/*Before After*/
+.container:hover .beforeAfter .upper_section {
+    animation: Translate 2s linear infinite;
+}
+.container:hover .beforeAfter .upper_section div {
+    animation: TranslateYPositive 2s linear infinite;
+}
+
+.animation {
+    width: 30%;
+    height: 100%;
+    margin: 0 2%;
+    border-radius: 5%;
+    color: #ffffff;
+    text-align: center;
+    font-size: 26px;
+    overflow: hidden;
+}
+
+/*Fade + Reveal + Before After*/
+.fadeBg .animation,
+.reveal .animation,
+.beforeAfter .animation {
+    position: relative;
+}
+
+/*Fade + Reveal + Before After Lower Sections*/
+.fadeBg .lower_section,
+.reveal .lower_section,
+.beforeAfter .lower_section {
+    position: absolute;
+}
+
+/*Reveal, fade Upper Section, & Before After Upper Section*/
+.reveal .upper_section,
+.beforeAfter .upper_section,
+.fadeBg .upper_section {
+    position: absolute;
+    z-index: 1;
+}
+
+.beforeAfter .upper_section {
+    overflow: hidden;
+}
+
+/*Input*/
+.container input {
+    opacity: 0;
+}
+
+/*Label*/
+.container .input {
+    display: block;
+    text-align: left;
+    height: 100%;
+    width: 70%;
+}
+
+/*Keyframes*/
+@keyframes Translate {
+    50% {
+        transform: translateY(-100%);
+   }
+}
+@keyframes TranslateYPositive {
+    50% {
+        transform: translateY(100%);
+   }
+}
+@keyframes FadeA {
+    25%,50% {
+        opacity: 0;
+        visibility: hidden;
+    }
+    10%, 80% {
+        visibility: visible;
+   }
+}
+@keyframes FadeB {
+    25%, 50% {
+        opacity: 1;
+    }
+    90% {
+        visibility: hidden;
+        opacity: 0;
+   }
+}

@@ -9,6 +9,8 @@ module Pageflow
 
       allow(helper).to receive(:url_for)
       allow(helper).to receive(:authorized?).and_return(true)
+
+      stub_active_admin_config
     end
 
     %w[
@@ -21,7 +23,7 @@ module Pageflow
         create(:account, with_member: user, name: 'Account 1')
         create(:account, with_publisher: user, name: 'Account 2')
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         params[:order] = order
 
         render(user)

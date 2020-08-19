@@ -1,10 +1,13 @@
 require 'spec_helper'
+require 'pageflow/shared_contexts/fake_translations'
 
 module Pageflow
   describe Admin::EmbeddedIndexTable, type: :view_component do
     before do
       helper.extend(ActiveAdmin::ViewHelpers)
       allow(helper).to receive(:url_for)
+
+      stub_active_admin_config
     end
 
     it 'renders table of entries' do
@@ -42,6 +45,50 @@ module Pageflow
 
       expect(rendered).to have_selector('table td', text: 'Published Entry')
       expect(rendered).not_to have_selector('table td', text: 'Other Entry')
+    end
+
+    context 'translating scopes' do
+      include_context 'fake translations'
+
+      it 'respects resource-specific 18n-keys when translating scope filters' do
+        translation(I18n.default_locale,
+                    'active_admin.resources.Pageflow::Revision.scopes.publications',
+                    'Specific Translation')
+
+        entry = create(:entry, :published, title: 'Published Entry')
+
+        render do
+          embedded_index_table(entry.revisions, model: Revision) do
+            scope :publications
+
+            table_for_collection do
+              column :frozen_at
+            end
+          end
+        end
+
+        expect(rendered).to have_selector('.scope.publications', text: 'Specific Translation')
+      end
+
+      it 'translates scope filters' do
+        translation(I18n.default_locale,
+                    'active_admin.scopes.some_scope',
+                    'Published Tab Label')
+
+        entry = create(:entry, :published, title: 'Published Entry')
+
+        render do
+          embedded_index_table(entry.revisions) do
+            scope :some_scope, :publications
+
+            table_for_collection do
+              column :frozen_at
+            end
+          end
+        end
+
+        expect(rendered).to have_selector('.scope.some_scope', text: 'Published Tab Label')
+      end
     end
 
     it 'can order by sort column' do

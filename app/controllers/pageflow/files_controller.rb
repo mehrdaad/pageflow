@@ -3,15 +3,15 @@ module Pageflow
     include PublicHttpsMode
     include EntryPasswordProtection
 
-    before_filter :check_public_https_mode
+    before_action :check_public_https_mode
 
     def show
       respond_to do |format|
         format.html do
-          entry = PublishedEntry.find(params[:entry_id], entry_request_scope)
-          @file = entry.find_file(file_type.model, params[:id])
+          @entry = PublishedEntry.find(params[:entry_id], entry_request_scope)
+          @file = @entry.find_file(file_type.model, params[:id])
 
-          check_entry_password_protection(entry)
+          check_entry_password_protection(@entry)
         end
       end
     end

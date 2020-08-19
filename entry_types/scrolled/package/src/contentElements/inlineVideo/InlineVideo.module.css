@@ -1,0 +1,3 @@
+/* Timeline in native video controls is hidden in Storybook to prevent
+   Percy from detecting different loading progress as visual
+   change. See .storybook/preview-head.html file. */

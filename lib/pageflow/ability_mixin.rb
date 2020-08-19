@@ -23,6 +23,10 @@ module Pageflow
         AccountPolicy.new(user, account).add_member_to?
       end
 
+      can :see_user_quota, Account do |account|
+        AccountPolicy.new(user, account).see_user_quota?
+      end
+
       can :see_badge_belonging_to, Account do |account|
         AccountPolicy.new(user, account).see_badge_belonging_to?
       end
@@ -93,6 +97,10 @@ module Pageflow
 
       can :see_user_admin_tab, Admin::Tab do |tab|
         Admin::AdminOnlyTabPolicy.new(user, tab).see?
+      end
+
+      can :see_entry_types, Account do |account|
+        AccountPolicy.new(user, account).see_entry_types?
       end
 
       unless user.admin?
@@ -214,8 +222,12 @@ module Pageflow
           ThemingPolicy.new(user, theming).edit?
         end
 
-        can :index_widgets_for, Theming do |theming|
-          ThemingPolicy.new(user, theming).index_widgets_for?
+        can :create, EntryTemplate do |entry_template|
+          EntryTemplatePolicy.new(user, entry_template).create?
+        end
+
+        can :update, EntryTemplate do |entry_template|
+          EntryTemplatePolicy.new(user, entry_template).update?
         end
 
         can :create, ::User do |managed_user|
@@ -259,8 +271,8 @@ module Pageflow
         can :manage, [Entry, Revision]
         can :manage, Pageflow.config.file_types.map(&:model)
         can :manage, Folder
-        can :manage, Resque
         can :manage, Theming
+        can :manage, EntryTemplate
         can :manage, ::User
       end
     end

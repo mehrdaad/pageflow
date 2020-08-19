@@ -1,0 +1,31 @@
+.wrapper {
+}
+
+.content {
+  position: relative;
+}
+
+.shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.long .shadow {
+  bottom: -100vh;
+}
+
+.gradient .withShadow {
+  text-shadow: 0px 1px 5px black;
+}
+
+.gradient .shadowDark {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0px,rgba(0, 0, 0, 0.3) 100px,rgba(0, 0, 0, 0.3) 100%);
+}
+
+.gradient .shadowLight {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0px,rgba(255, 255, 255, 0.3) 100px,rgba(255, 255, 255, 0.3) 100%);
+}

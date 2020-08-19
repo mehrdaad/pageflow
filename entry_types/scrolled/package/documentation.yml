@@ -1,0 +1,51 @@
+toc:
+  - name: Frontend API
+    description: |
+      Main entry point of frontend API to register new content element types.
+    children:
+      - frontend_contentElementTypes
+
+  - name: Editor API
+    description: |
+      Main entry point of editor API to register new content element types.
+    children:
+      - editor_contentElementTypes
+  - name: Components
+    description: |
+      React components for building content elements.
+    children:
+      - AudioPlayer
+      - Image
+      - Figure
+      - Text
+      - VideoPlayer
+      - ViewportDependentPillarBoxes
+  - name: Hooks
+    description: |
+      React hooks to obtain entry data.
+    children:
+      - useContentElementEditorState
+      - useContentElementLifecycle
+      - useDarkBackground
+      - useFile
+      - useI18n
+      - useEntryMetadata
+      - useFileRights
+      - useLegalInfo
+      - useCredits
+      - useShareProviders
+      - useShareUrl
+      - useMediaSettings
+  - name: Spec Support
+    description: |
+      Helper functions to use in specs.
+    children:
+      - normalizeSeed
+      - renderInEntry
+      - renderHookInEntry
+  - name: Storybook Support
+    description: |
+      Helper functions to use in content element stories.
+    children:
+      - filePermaId
+      - storiesOfContentElement

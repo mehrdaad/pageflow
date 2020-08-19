@@ -1,6 +1,7 @@
-json.merge! common_entry_seed(entry)
+common_entry_seed(json, entry)
 
-json.theming entry_theming_seed(entry)
+json.entry entry_attributes_seed(entry)
+json.theme entry_theme_seed(entry)
 
 json.storylines entry_storylines_seed(entry)
 json.chapters entry_chapters_seed(entry)
@@ -10,11 +11,5 @@ json.widgets entry_widgets_seed(entry)
 json.file_ids entry_file_ids_seed(entry)
 
 json.files do
-  Pageflow.config.file_types.each do |file_type|
-    json.set!(file_type.collection_name) do
-      json.array!(entry.find_files(file_type.model)) do |file|
-        json.partial! 'pageflow/files/file', file: file, file_type: file_type
-      end
-    end
-  end
+  files_json_seed(json, entry)
 end

@@ -1,6 +1,7 @@
 require 'pageflow/engine'
 require 'pageflow/global_config_api'
 require 'pageflow/news_item_api'
+require 'pageflow/version'
 
 module Pageflow
   extend GlobalConfigApi
@@ -27,7 +28,7 @@ module Pageflow
   end
 
   def self.active_admin_settings(config)
-    config.before_filter do
+    config.before_action do
       I18n.locale = current_user.try(:locale) || http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
     end
   end

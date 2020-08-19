@@ -5,27 +5,6 @@
 /// Base typography for page.
 $page-typography: () !default;
 
-/// Typography for header.
-$page-header-typography: () !default;
-
-/// Typography for header tagline.
-$page-header-tagline-typography: () !default;
-
-/// Typography for header title.
-$page-header-title-typography: () !default;
-
-/// Typography for header title in phone layout.
-$page-header-title-phone-typography: () !default;
-
-/// Typography for title on first page.
-$page-header-first-page-title-typography: () !default;
-
-/// Typography for title on first page in phone layout.
-$page-header-first-page-title-phone-typography: () !default;
-
-/// Typography for header subtitle.
-$page-header-subtitle-typography: () !default;
-
 /// Typography for content text.
 $page-content-text-typography: () !default;
 
@@ -35,60 +14,25 @@ $page-content-font-size: 1em !default;
 /// Base font size for page content in phone layout
 $page-content-phone-font-size: 0.7em !default;
 
-/// Color of text
-/// @group page-colors
-$page-text-color: #fff !default;
-
-/// Color of text on inverted pages
-/// @group page-colors
-$page-inverted-text-color: #000 !default;
-
-/// Background-color of pages
-/// @group page-colors
-$page-background-color: #000 !default;
-
-/// Background-color of inverted pages
-/// @group page-colors
-$page-inverted-background-color: #fff !default;
-
-/// Color of the gradient
-/// @group page-colors
-$page-shadow-color: #000 !default;
-
-/// Color of the gradient on inverted pages
-/// @group page-colors
-$page-shadow-inverted-color: #fff !default;
 
 // Deprecated. Use typography variables above.
 
 $page-font-family: $standard-font !default;
 $page-font-size: 16px !default;
-$page-header-font-family: $page-font-family !default;
-$page-header-font-size: 1.375em !default;
-$page-header-font-weight: normal !default;
-$page-header-tagline-font-size: 1em !default;
-$page-header-tagline-font-weight: $page-header-font-weight !default;
-$page-header-tagline-line-height: normal !default;
-$page-header-tagline-margin-top: 0 !default;
-$page-header-title-font-size: 2.3em !default;
-$page-header-title-phone-font-size: 1.8em !default;
-$page-header-first-page-title-font-size: 2.5em !default;
-$page-header-first-page-title-phone-font-size: 2em !default;
-$page-header-title-font-weight: $page-header-font-weight !default;
-$page-header-title-line-height: 1em !default;
-$page-header-first-page-title-line-height: 1em !default;
-$page-header-title-margin-top: 0.4em !default;
-$page-header-title-margin-bottom: 0.4em !default;
-$page-header-subtitle-font-size: 1em !default;
-$page-header-subtitle-font-weight: $page-header-font-weight !default;
-$page-header-subtitle-line-height: normal !default;
-$page-header-subtitle-margin-bottom: 1.875em !default;
 $page-content-text-font-family: $page-font-family !default;
 $page-content-text-font-size: 1.2em !default;
 $page-content-text-line-height: 1.5em !default;
+$page-content-list-margin: 1em !default;
+$page-content-list-indent: 40px !default;
 
 @import "./page/anchors";
+@import "./page/colors";
+@import "./page/header";
+@import "./page/hyphenate";
 @import "./page/paddings";
+@import "./page/content_text_margin";
+@import "./page/scroller";
+@import "./page/shadow";
 
 @import "./page/line_lengths";
 
@@ -100,8 +44,6 @@ $page-content-text-line-height: 1.5em !default;
       font-size: $page-font-size
     )
   );
-  color: $page-text-color;
-  background-color: $page-background-color;
 
   .content {
     font-size: $page-content-font-size;
@@ -111,85 +53,7 @@ $page-content-text-line-height: 1.5em !default;
     }
   }
 
-  .shadow {
-    @include shadow($page-shadow-color);
-  }
-
-  &.invert {
-    color: $page-inverted-text-color;
-    background-color: $page-inverted-background-color;
-
-    .shadow {
-      @include shadow($page-shadow-inverted-color);
-    }
-  }
-
-  h2 {
-    @include typography(
-      $page-header-typography,
-      (
-        font-family: $page-header-font-family,
-        font-size: $page-header-font-size
-      )
-    );
-
-    .tagline {
-      display: block;
-
-      @include typography(
-        $page-header-tagline-typography,
-        (
-          font-size: $page-header-tagline-font-size,
-          font-weight: $page-header-tagline-font-weight,
-          line-height: $page-header-tagline-line-height,
-          margin-top: $page-header-tagline-margin-top,
-          letter-spacing: 0
-        )
-      );
-    }
-
-    .title {
-      display: block;
-
-      @include typography(
-        $page-header-title-typography,
-        (
-          font-size: $page-header-title-font-size,
-          font-weight: $page-header-title-font-weight,
-          line-height: $page-header-title-line-height,
-          margin-top: $page-header-title-margin-top,
-          margin-bottom: $page-header-title-margin-top,
-          letter-spacing: 0
-        )
-      );
-
-      @include phone {
-        @include typography(
-          $page-header-title-phone-typography,
-          (
-            font-size: $page-header-title-phone-font-size
-          )
-        );
-      }
-    }
-
-    .subtitle {
-      display: block;
-
-      @include typography(
-        $page-header-subtitle-typography,
-        (
-          font-size: $page-header-subtitle-font-size,
-          font-weight: $page-header-subtitle-font-weight,
-          line-height: $page-header-subtitle-line-height,
-          margin-top: 0,
-          margin-bottom: $page-header-subtitle-margin-bottom
-        )
-      );
-    }
-  }
-
-  .contentText > * {
+  .page_text > * {
     @include typography(
       $page-content-text-typography,
       (
@@ -200,29 +64,9 @@ $page-content-text-line-height: 1.5em !default;
     );
   }
 
-  p {
-    margin-top: 0;
-  }
-}
-
-.page:first-child {
-  h2 .title {
-    @include typography(
-      $page-header-first-page-title-typography,
-      (
-        font-size: $page-header-first-page-title-font-size,
-        line-height: $page-header-first-page-title-line-height,
-        letter-spacing: 0
-      )
-    );
-
-    @include phone {
-      @include typography(
-        $page-header-first-page-title-phone-typography,
-        (
-          font-size: $page-header-first-page-title-phone-font-size
-        )
-      );
-    }
+  .page_text > .paragraph ul,
+  .page_text > .paragraph ol {
+    margin: $page-content-list-margin 0;
+    padding: 0 0 0 $page-content-list-indent;
   }
 }

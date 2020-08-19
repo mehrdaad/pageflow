@@ -5,10 +5,20 @@ namespace :pageflow do
     Pageflow::Dummy.setup
   end
 
-  namespace :node_package do
-    desc 'Build node package'
+  namespace :packages do
+    desc 'Build JavaScript packages'
     task :build do
-      system('bin/npm run build')
+      system('yarn install --frozen-lockfile && bin/build-packages ')
+    end
+  end
+
+  namespace :release do
+    task :pageflow_support do
+      Dir.chdir('spec/support') do
+        puts '=== Releasing pageflow-support ==='
+        system('bundle exec rake release')
+        puts '==='
+      end
     end
   end
 

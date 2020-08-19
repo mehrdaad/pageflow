@@ -109,6 +109,10 @@ body {
     @include transform(translate3d(0, -100px, 0));
     @include transition(transform 0.4s ease, visibility 0.4s, right 250ms);
 
+    .widget_phone_horizontal_slideshow_mode_present & {
+      @include fa-arrow-up-icon;
+    }
+
     &.is_visible {
       visibility: visible;
       @include transform(translate3d(0, 0, 0));
@@ -128,9 +132,13 @@ body {
       height: 34px;
       border-radius: 17px;
       background-color: rgba(53, 53, 53, 0.9);
-      @include box-shadow(0 0 7px #ccc);
+      box-shadow: 0 0 7px #ccc;
       z-index: 1;
     }
+  }
+
+  &.without_sharing_button .menu.sharing {
+    display: none;
   }
 
   .overview_mobile, .imprint_mobile, .sharing_mobile {
@@ -183,6 +191,10 @@ body {
   .imprint_mobile, .sharing_mobile {
     visibility: visible;
     width: 200px;
+  }
+
+  .overview_mobile a {
+    @include hide-text;
   }
 
   .wrapper {
@@ -330,43 +342,32 @@ body {
     }
 
     .sharing_mobile {
-      .wrapper {
-        top: 0;
-      }
       li {
         width: 200px;
         border-bottom: 1px solid #465b73;
 
         > a {
-          margin-left: 78px;
           text-decoration: none;
           font-size: 24px;
-          padding-top: 12px;
+          padding: 10px 10px 10px 72px;
           border: 0;
           height: 80px;
 
-          &:before {
-            content: "";
+          svg {
             position: absolute;
-            width: 42px;
-            height: 37px;
-            background-size: 100% auto;
-            left: 30px;
-            top: 30px;
+            left: 25px;
+            top: 36px;
+            width: 30px;
+            height: 30px;
           }
 
-          &.facebook:before {
-            background-position: center top;
-          }
-          &.twitter:before {
-            background-position: center 122px;
-          }
-          &.google:before {
-            background-position: center bottom;
+          p {
+            padding-top: 3px;
           }
         }
       }
     }
+
     .sub_share {
       display: none;
     }

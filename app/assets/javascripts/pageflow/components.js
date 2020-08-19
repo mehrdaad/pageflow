@@ -1,7 +1,3 @@
-//= require_self
-//= require pageflow/react
+// Deprecation: File moved to pageflow_paged
 
-var PAGEFLOW_EDITOR = false;
-
-var Backbone = {};
-var ReactDOM = {};
+//= require pageflow_paged/components

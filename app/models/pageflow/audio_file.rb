@@ -1,12 +1,12 @@
 module Pageflow
   class AudioFile < ApplicationRecord
-    include HostedFile
-    include EncodedFileStateMachine
+    include UploadableFile
+    include MediaEncodingStateMachine
 
-    belongs_to :confirmed_by, :class_name => 'User'
+    belongs_to :confirmed_by, class_name: 'User', optional: true
 
     def attachment_s3_url
-      "s3://#{File.join(attachment_on_s3.bucket_name, attachment_on_s3.path)}"
+      "s3://#{File.join(attachment.bucket_name, attachment.path)}"
     end
 
     def m4a

@@ -1,3 +1,5 @@
+// scss-lint:disable IdSelector
+
 html, body, #outer_wrapper {
   margin: 0;
   padding: 0;
@@ -16,15 +18,13 @@ body {
   -ms-touch-action: none;
 }
 
-.ios7.ipad body {
-  @media screen and (orientation: landscape) {
-    position: fixed;
-    margin-top: 0px;
-  }
-}
-
 body.js, .js #outer_wrapper {
   overflow: hidden;
+}
+
+// Safari sets background color of fullscreen elements to white.
+#outer_wrapper:-webkit-full-screen {
+  background-color: transparent;
 }
 
 // Apps like Twitter and Facebook displays a toolbar at the bottom of
@@ -72,7 +72,6 @@ a {
 @import "./header";
 @import "./focus_outline";
 @import "./skip_links";
-@import "./multimedia_alert";
 @import "./hide_text";
 @import "./subshare";
 @import "./delayed_text_fade_in";

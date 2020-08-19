@@ -1,0 +1,38 @@
+.root {
+}
+
+.group {
+  margin-left: 8%;
+  margin-right: 8%;
+}
+
+.group-full {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.sticky,
+.inline {
+  max-width: 500px;
+}
+
+.right .inline {
+  margin-left: auto;
+}
+
+.narrow.right .sticky {
+  margin-left: auto;
+}
+
+.wide .sticky {
+  position: sticky;
+  float: right;
+  clear: right;
+  top: 33%;
+  width: 30%;
+  max-width: 600px;
+}
+
+.wide.right .sticky {
+  float: left;
+}

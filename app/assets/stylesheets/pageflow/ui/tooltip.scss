@@ -1,10 +1,9 @@
 .tooltip {
-  $background-color: rgba(0, 0, 0, 0.7);
+  $background-color: rgba(0, 0, 0, 0.9);
 
   position: absolute;
   z-index: 10001;
   top: 40px;
-  left: 400px;
   max-width: 70%;
   padding: 10px 15px;
   color: #fff;
@@ -43,6 +42,21 @@
 
       top: -20px;
       left: 7px;
+    }
+  }
+
+  &.align_top_center {
+    transform: translate(-50%, -100%);
+
+    &:after {
+      border-top: solid 10px $background-color;
+      border-right: solid 10px transparent;
+      border-bottom: solid 10px transparent;
+      border-left: solid 10px transparent;
+
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
     }
   }
 

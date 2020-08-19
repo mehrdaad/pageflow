@@ -17,8 +17,41 @@ module Pageflow
       classes << "scroll_indicator_orientation_#{page.configuration['scroll_indicator_orientation']}" if page.configuration['scroll_indicator_orientation'].present?
       classes << "delayed_text_fade_in_#{page.configuration['delayed_text_fade_in']}" if page.configuration['delayed_text_fade_in'].present?
       classes << 'chapter_beginning' if page.position == 0
+      classes << 'first_page' if page.is_first
       classes << 'no_text_content' if !page_has_content(page)
+      classes << 'hide_logo' if page.configuration['hide_logo']
       classes.join(' ')
+    end
+
+    def page_default_content(page)
+      safe_join([
+                  page_header(page),
+                  page_print_image(page),
+                  page_text(page)
+                ])
+    end
+
+    def page_header(page)
+      content_tag(:h3, class: 'page_header') do
+        safe_join([
+                    content_tag(:span, page.configuration['tagline'],
+                                class: 'page_header-tagline'),
+                    content_tag(:span, page.configuration['title'],
+                                class: 'page_header-title'),
+                    content_tag(:span, page.configuration['subtitle'],
+                                class: 'page_header-subtitle')
+                  ])
+      end
+    end
+
+    def page_print_image(page)
+      background_image_tag(page.configuration['background_image_id'], 'class' => 'print_image')
+    end
+
+    def page_text(page)
+      content_tag(:div, class: 'page_text') do
+        content_tag(:div, raw(page.configuration['text']), class: 'paragraph')
+      end
     end
 
     # @api private
@@ -50,15 +83,22 @@ module Pageflow
 
     def page_media_breakpoints
       {
-        :large => :default,
-        :medium => 'max-width: 900px'
+        desktop: :default,
+        mobile: 'max-width: 900px'
       }
     end
 
     def page_thumbnail_image_class(page, hero)
-      file_thumbnail_css_class(page.thumbnail_file, hero ? :link_thumbnail_large : :link_thumbnail)
+      file_thumbnail_css_class(page_thumbnail_file(page), hero ? :link_thumbnail_large : :link_thumbnail)
     end
 
-    CSS_RENDERED_THUMBNAIL_STYLES = [:thumbnail_large, :navigation_thumbnail_large, :link_thumbnail, :link_thumbnail_large]
+    def page_thumbnail_url(page, *args)
+      page_thumbnail_file(page).thumbnail_url(*args)
+    end
+
+    def page_thumbnail_file(page)
+      ThumbnailFileResolver.new(@entry, page.page_type.thumbnail_candidates, page.configuration)
+                           .find_thumbnail
+    end
   end
 end

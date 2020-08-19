@@ -5,13 +5,22 @@ module Pageflow
   module EntryJsonSeedHelper
     include RenderJsonHelper
     include CommonEntrySeedHelper
+    include FilesHelper
 
     def entry_json_seed(entry)
       sanitize_json(render_json_partial('pageflow/entry_json_seed/entry',
                                         entry: entry)).html_safe
     end
 
-    def entry_theming_seed(entry)
+    def entry_attributes_seed(entry)
+      {
+        title: entry.title,
+        slug: entry.slug,
+        published_at: entry.published_at.try(:utc).try(:iso8601, 0)
+      }
+    end
+
+    def entry_theme_seed(entry)
       theme = entry.theme
       {
         change_to_parent_page_at_storyline_boundary: theme.change_to_parent_page_at_storyline_boundary?,
@@ -42,13 +51,13 @@ module Pageflow
 
     def entry_file_ids_seed(entry)
       Pageflow.config.file_types.with_thumbnail_support.each_with_object({}) do |file_type, result|
-        result[file_type.collection_name] = entry.find_files(file_type.model).map(&:id)
+        result[file_type.collection_name] = entry.find_files(file_type.model).map(&:perma_id)
       end
     end
 
     def entry_audio_files_json_seed(entry)
-      seed = entry.audio_files.each_with_object({}) do |audio_file, result|
-        result[audio_file.id] = audio_file_sources(audio_file)
+      seed = entry.find_files(AudioFile).each_with_object({}) do |audio_file, result|
+        result[audio_file.perma_id] = audio_file_sources(audio_file)
       end
 
       sanitize_json(seed.to_json).html_safe

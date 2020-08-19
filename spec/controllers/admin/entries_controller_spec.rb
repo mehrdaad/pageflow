@@ -9,7 +9,7 @@ describe Admin::EntriesController do
         account_manager = create(:user)
         create(:account, with_manager: account_manager)
 
-        sign_in(account_manager)
+        sign_in(account_manager, scope: :user)
         get :index
 
         expect(response.body).to have_selector('#q_account_id')
@@ -20,7 +20,7 @@ describe Admin::EntriesController do
         account = create(:account, with_publisher: underprivileged_user)
         create(:entry, with_manager: underprivileged_user, account: account)
 
-        sign_in(underprivileged_user)
+        sign_in(underprivileged_user, scope: :user)
         get :index
 
         expect(response.body).not_to have_selector('#q_account_id')
@@ -37,7 +37,7 @@ describe Admin::EntriesController do
         user = create(:user)
         create(:account, with_manager: user)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         get :index
 
         expect(response.body).to have_text(new_button_text)
@@ -47,7 +47,7 @@ describe Admin::EntriesController do
         user = create(:user)
         create(:account, with_editor: user)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         get :index
 
         expect(response.body).not_to have_text(new_button_text)
@@ -61,7 +61,7 @@ describe Admin::EntriesController do
             user = create(:user, :admin)
             create(:entry, password_digest: 'secret')
 
-            sign_in(user)
+            sign_in(user, scope: :user)
             get(:index, format: format)
 
             expect(response.body).not_to include('secret')
@@ -79,7 +79,7 @@ describe Admin::EntriesController do
       entry = create(:entry, account: account)
 
       sign_in(current_user)
-      get(:eligible_themings_options, entry_id: entry.id, term: 'one')
+      get(:eligible_themings_options, params: {entry_id: entry.id, term: 'one'})
       option_texts = json_response(path: ['results', '*', 'text'])
 
       expect(option_texts).to include('one')
@@ -94,11 +94,11 @@ describe Admin::EntriesController do
         user = create(:user)
         entry = create(:entry, account: account, with_editor: user, title: 'example')
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
-        expect(response.body).to have_selector('.admin_tabs_view .tabs .members')
-        expect(response.body).to have_selector('.admin_tabs_view .tabs .revisions')
+        expect(response.body).to have_selector('.admin_tabs_view-tabs .members')
+        expect(response.body).to have_selector('.admin_tabs_view-tabs .revisions')
       end
 
       it 'account manager sees features tab' do
@@ -106,10 +106,10 @@ describe Admin::EntriesController do
         account = create(:account, with_manager: user)
         entry = create(:entry, account: account)
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
-        expect(response.body).to have_selector('.admin_tabs_view .tabs .features')
+        expect(response.body).to have_selector('.admin_tabs_view-tabs .features')
       end
 
       context 'with config.permissions.only_admins_may_update_features' do
@@ -122,10 +122,10 @@ describe Admin::EntriesController do
           account = create(:account, with_manager: user)
           entry = create(:entry, account: account)
 
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
-          expect(response.body).not_to have_selector('.admin_tabs_view .tabs .features')
+          expect(response.body).not_to have_selector('.admin_tabs_view-tabs .features')
         end
 
         it 'admin sees features tab' do
@@ -136,10 +136,10 @@ describe Admin::EntriesController do
           user = create(:user, admin: true)
           entry = create(:entry)
 
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
-          expect(response.body).to have_selector('.admin_tabs_view .tabs .features')
+          expect(response.body).to have_selector('.admin_tabs_view-tabs .features')
         end
       end
 
@@ -148,20 +148,20 @@ describe Admin::EntriesController do
         account = create(:account, with_publisher: user)
         entry = create(:entry, account: account)
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
-        expect(response.body).not_to have_selector('.admin_tabs_view .tabs .features')
+        expect(response.body).not_to have_selector('.admin_tabs_view-tabs .features')
       end
 
       it 'entry manager does not see features tab' do
         user = create(:user)
         entry = create(:entry, with_manager: user)
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
-        expect(response.body).not_to have_selector('.admin_tabs_view .tabs .features')
+        expect(response.body).not_to have_selector('.admin_tabs_view-tabs .features')
       end
     end
 
@@ -189,8 +189,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_role: :publisher)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -203,8 +203,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_role: :publisher)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -217,8 +217,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_role: :publisher)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).not_to have_selector(tab_view_selector)
         end
@@ -234,8 +234,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -248,8 +248,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -263,8 +263,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).not_to have_selector(tab_view_selector)
         end
@@ -277,8 +277,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).not_to have_selector(tab_view_selector)
         end
@@ -293,8 +293,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        admin_only: true)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -308,8 +308,8 @@ describe Admin::EntriesController do
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        admin_only: true)
-          sign_in(user)
-          get(:show, id: entry.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: entry.id})
 
           expect(response.body).not_to have_selector(tab_view_selector)
         end
@@ -325,8 +325,8 @@ describe Admin::EntriesController do
           config.admin_attributes_table_rows.register(:entry, :custom) { 'custom attribute' }
         end
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
         expect(response.body).to have_text('custom attribute')
       end
@@ -345,8 +345,8 @@ describe Admin::EntriesController do
           end
         end
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
         expect(response.body).to have_text('custom attribute')
       end
@@ -364,8 +364,8 @@ describe Admin::EntriesController do
           end
         end
 
-        sign_in(user)
-        get(:show, id: entry.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: entry.id})
 
         expect(response.body).not_to have_text('custom attribute')
       end
@@ -381,7 +381,7 @@ describe Admin::EntriesController do
         config.admin_form_inputs.register(:entry, :custom_field)
       end
 
-      sign_in(user)
+      sign_in(user, scope: :user)
       get :new
 
       expect(response.body).to have_selector('[name="entry[custom_field]"]')
@@ -394,10 +394,10 @@ describe Admin::EntriesController do
       create(:account, with_manager: user)
       other_account = create(:account)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
       expect do
-        post :create, entry: attributes_for(:entry, account_id: other_account)
+        post :create, params: {entry: attributes_for(:entry, account_id: other_account)}
       end.not_to change { other_account.entries.count }
     end
 
@@ -406,9 +406,9 @@ describe Admin::EntriesController do
       create(:entry)
 
       user = create(:user, :manager, on: create(:account))
-      sign_in(user)
+      sign_in(user, scope: :user)
 
-      post :create, entry: attributes_for(:entry, theming_id: theming)
+      post :create, params: {entry: attributes_for(:entry, theming_id: theming)}
       entry = Pageflow::Entry.last
 
       expect(entry.theming).to eq(entry.account.default_theming)
@@ -418,29 +418,29 @@ describe Admin::EntriesController do
       user = create(:user)
       account = create(:account, with_publisher: user)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
       expect do
-        post :create, entry: attributes_for(:entry, account: account)
+        post :create, params: {entry: attributes_for(:entry, account: account)}
       end.to change { account.entries.count }
     end
 
     it 'allows admin to set entry account' do
       account = create(:account)
 
-      sign_in(create(:user, :admin))
+      sign_in(create(:user, :admin), scope: :user)
 
       expect do
-        post :create, entry: attributes_for(:entry, account_id: account)
+        post :create, params: {entry: attributes_for(:entry, account_id: account)}
       end.to change { account.entries.count }
     end
 
     it 'allows admin to create entries with custom theming' do
       theming = create(:theming)
 
-      sign_in(create(:user, :admin))
+      sign_in(create(:user, :admin), scope: :user)
 
-      post :create, entry: attributes_for(:entry, theming_id: theming)
+      post :create, params: {entry: attributes_for(:entry, theming_id: theming)}
 
       entry = Pageflow::Entry.last
 
@@ -450,8 +450,8 @@ describe Admin::EntriesController do
     it 'sets entry theming to default theming of account' do
       account = create(:account)
 
-      sign_in(create(:user, :admin))
-      post :create, entry: attributes_for(:entry, account_id: account)
+      sign_in(create(:user, :admin), scope: :user)
+      post :create, params: {entry: attributes_for(:entry, account_id: account)}
 
       expect(Pageflow::Entry.last.theming).to eq(account.default_theming)
     end
@@ -464,8 +464,8 @@ describe Admin::EntriesController do
         config.admin_form_inputs.register(:entry, :custom_field)
       end
 
-      sign_in(user)
-      post(:create, entry: {title: 'some_title', custom_field: 'some value'})
+      sign_in(user, scope: :user)
+      post(:create, params: {entry: {title: 'some_title', custom_field: 'some value'}})
 
       expect(Pageflow::Entry.last.custom_field).to eq('some value')
     end
@@ -474,10 +474,22 @@ describe Admin::EntriesController do
       user = create(:user)
       create(:account, with_publisher: user)
 
-      sign_in(user)
-      post(:create, entry: {title: 'some_title', custom_field: 'some value'})
+      sign_in(user, scope: :user)
+      post(:create, params: {entry: {title: 'some_title', custom_field: 'some value'}})
 
       expect(Pageflow::Entry.last.custom_field).to eq(nil)
+    end
+
+    it "sets the entry revisions locale to the default locale of the account's "\
+       'first paged entry template' do
+      user = create(:user, locale: 'en')
+      account = create(:account, with_publisher: user)
+      account.first_paged_entry_template.update(default_locale: user.locale)
+
+      sign_in(user, scope: :user)
+      post(:create, params: {entry: {title: 'some_title'}})
+
+      expect(Pageflow::Entry.last.revisions.first.locale).to eq('en')
     end
   end
 
@@ -490,8 +502,8 @@ describe Admin::EntriesController do
         config.admin_form_inputs.register(:entry, :custom_field)
       end
 
-      sign_in(user)
-      get :edit, id: entry
+      sign_in(user, scope: :user)
+      get :edit, params: {id: entry}
 
       expect(response.body).to have_selector('[name="entry[custom_field]"]')
     end
@@ -508,8 +520,8 @@ describe Admin::EntriesController do
         end
       end
 
-      sign_in(user)
-      get :edit, id: entry
+      sign_in(user, scope: :user)
+      get :edit, params: {id: entry}
 
       expect(response.body).to have_selector('[name="entry[custom_field]"]')
     end
@@ -526,8 +538,8 @@ describe Admin::EntriesController do
         end
       end
 
-      sign_in(user)
-      get :edit, id: entry
+      sign_in(user, scope: :user)
+      get :edit, params: {id: entry}
 
       expect(response.body).not_to have_selector('[name="entry[custom_field]"]')
     end
@@ -540,8 +552,8 @@ describe Admin::EntriesController do
       other_account = create(:account, with_editor: user)
       entry = create(:entry, account: account, with_manager: user)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {account_id: other_account}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {account_id: other_account}}
 
       expect(entry.reload.account).to eq(account)
     end
@@ -552,8 +564,8 @@ describe Admin::EntriesController do
       other_account = create(:account)
       entry = create(:entry, account: account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {account_id: other_account}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {account_id: other_account}}
 
       expect(entry.reload.account).to eq(account)
     end
@@ -564,8 +576,8 @@ describe Admin::EntriesController do
       other_account = create(:account, with_publisher: user)
       entry = create(:entry, account: account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {account_id: other_account}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {account_id: other_account}}
 
       expect(entry.reload.account).to eq(other_account)
     end
@@ -581,8 +593,8 @@ describe Admin::EntriesController do
         other_account = create(:account, with_publisher: user)
         entry = create(:entry, account: account)
 
-        sign_in(user)
-        patch :update, id: entry, entry: {account_id: other_account}
+        sign_in(user, scope: :user)
+        patch :update, params: {id: entry, entry: {account_id: other_account}}
 
         expect(entry.reload.theming).to eq(account.default_theming)
       end
@@ -600,8 +612,8 @@ describe Admin::EntriesController do
         other_account = create(:account, with_publisher: user)
         entry = create(:entry, account: account)
 
-        sign_in(user)
-        patch :update, id: entry, entry: {account_id: other_account}
+        sign_in(user, scope: :user)
+        patch :update, params: {id: entry, entry: {account_id: other_account}}
 
         expect(entry.reload.theming).to eq(other_account.default_theming)
       end
@@ -617,8 +629,8 @@ describe Admin::EntriesController do
         custom_theming = create(:theming)
         entry = create(:entry, account: account, theming: custom_theming)
 
-        sign_in(user)
-        patch :update, id: entry, entry: {title: 'Some new title'}
+        sign_in(user, scope: :user)
+        patch :update, params: {id: entry, entry: {title: 'Some new title'}}
 
         expect(entry.reload.theming).to eq(custom_theming)
       end
@@ -633,8 +645,8 @@ describe Admin::EntriesController do
         other_account = create(:account)
         entry = create(:entry, account: account)
 
-        sign_in(user)
-        patch :update, id: entry, entry: {account_id: other_account}
+        sign_in(user, scope: :user)
+        patch :update, params: {id: entry, entry: {account_id: other_account}}
 
         expect(entry.reload.theming).to eq(account.default_theming)
       end
@@ -645,8 +657,8 @@ describe Admin::EntriesController do
       other_account = create(:account)
 
       entry = create(:entry, account: account)
-      sign_in(create(:user, :admin))
-      patch :update, id: entry, entry: {account_id: other_account}
+      sign_in(create(:user, :admin), scope: :user)
+      patch :update, params: {id: entry, entry: {account_id: other_account}}
 
       expect(entry.reload.account).to eq(other_account)
     end
@@ -658,8 +670,8 @@ describe Admin::EntriesController do
       other_theming = create(:theming, account: account)
       entry = create(:entry, theming: theming, account: account, with_manager: user)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {theming_id: other_theming}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {theming_id: other_theming}}
 
       expect(entry.reload.theming).to eq(theming)
     end
@@ -671,8 +683,8 @@ describe Admin::EntriesController do
       other_theming = create(:theming, account: account)
       entry = create(:entry, theming: theming, account: account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {theming_id: other_theming}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {theming_id: other_theming}}
 
       expect(entry.reload.theming).to eq(other_theming)
     end
@@ -685,8 +697,8 @@ describe Admin::EntriesController do
       other_theming = create(:theming, account: other_account)
       entry = create(:entry, theming: theming, account: account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {theming_id: other_theming}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {theming_id: other_theming}}
 
       expect(entry.reload.theming).to eq(theming)
     end
@@ -696,8 +708,8 @@ describe Admin::EntriesController do
       other_theming = create(:theming)
       entry = create(:entry, theming: theming)
 
-      sign_in(create(:user, :admin))
-      patch :update, id: entry, entry: {theming_id: other_theming}
+      sign_in(create(:user, :admin), scope: :user)
+      patch :update, params: {id: entry, entry: {theming_id: other_theming}}
 
       expect(entry.reload.theming).to eq(other_theming)
     end
@@ -708,8 +720,8 @@ describe Admin::EntriesController do
       folder = create(:folder, account: account)
       entry = create(:entry, account: account, with_manager: user)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {folder_id: folder}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {folder_id: folder}}
 
       expect(entry.reload.folder).to eq(nil)
     end
@@ -720,8 +732,8 @@ describe Admin::EntriesController do
       folder = create(:folder, account: account)
       entry = create(:entry, account: account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {folder_id: folder}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {folder_id: folder}}
 
       expect(entry.reload.folder).to eq(folder)
     end
@@ -732,8 +744,8 @@ describe Admin::EntriesController do
       folder = create(:folder)
       entry = create(:entry, account: folder.account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {folder_id: folder}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {folder_id: folder}}
 
       expect(entry.reload.folder).to eq(nil)
     end
@@ -743,8 +755,8 @@ describe Admin::EntriesController do
       folder = create(:folder)
       entry = create(:entry, account: folder.account)
 
-      sign_in(user)
-      patch :update, id: entry, entry: {folder_id: folder}
+      sign_in(user, scope: :user)
+      patch :update, params: {id: entry, entry: {folder_id: folder}}
 
       expect(entry.reload.folder).to eq(folder)
     end
@@ -753,12 +765,14 @@ describe Admin::EntriesController do
       user = create(:user, :admin)
       entry = create(:entry)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
       patch(:update,
-            id: entry.id,
-            entry: {
-              feature_states: {
-                fancy_page_type: 'enabled'
+            params: {
+              id: entry.id,
+              entry: {
+                feature_states: {
+                  fancy_page_type: 'enabled'
+                }
               }
             })
 
@@ -770,12 +784,14 @@ describe Admin::EntriesController do
       account = create(:account, with_manager: user)
       entry = create(:entry, account: account)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
       patch(:update,
-            id: entry.id,
-            entry: {
-              feature_states: {
-                fancy_page_type: 'enabled'
+            params: {
+              id: entry.id,
+              entry: {
+                feature_states: {
+                  fancy_page_type: 'enabled'
+                }
               }
             })
 
@@ -791,12 +807,14 @@ describe Admin::EntriesController do
         user = create(:user, :admin)
         entry = create(:entry)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         patch(:update,
-              id: entry.id,
-              entry: {
-                feature_states: {
-                  fancy_page_type: 'enabled'
+              params: {
+                id: entry.id,
+                entry: {
+                  feature_states: {
+                    fancy_page_type: 'enabled'
+                  }
                 }
               })
 
@@ -812,12 +830,14 @@ describe Admin::EntriesController do
         account = create(:account, with_manager: user)
         entry = create(:entry, account: account)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         patch(:update,
-              id: entry.id,
-              entry: {
-                feature_states: {
-                  fancy_page_type: 'enabled'
+              params: {
+                id: entry.id,
+                entry: {
+                  feature_states: {
+                    fancy_page_type: 'enabled'
+                  }
                 }
               })
 
@@ -830,12 +850,14 @@ describe Admin::EntriesController do
       account = create(:account, with_publisher: user)
       entry = create(:entry, account: account, with_manager: user)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
       patch(:update,
-            id: entry.id,
-            entry: {
-              feature_states: {
-                fancy_page_type: 'enabled'
+            params: {
+              id: entry.id,
+              entry: {
+                feature_states: {
+                  fancy_page_type: 'enabled'
+                }
               }
             })
 
@@ -850,8 +872,8 @@ describe Admin::EntriesController do
         config.admin_form_inputs.register(:entry, :custom_field)
       end
 
-      sign_in(user)
-      patch(:update, id: entry, entry: {custom_field: 'some value'})
+      sign_in(user, scope: :user)
+      patch(:update, params: {id: entry, entry: {custom_field: 'some value'}})
 
       expect(entry.reload.custom_field).to eq('some value')
     end
@@ -860,8 +882,8 @@ describe Admin::EntriesController do
       user = create(:user)
       entry = create(:entry, with_editor: user)
 
-      sign_in(user)
-      patch(:update, id: entry, entry: {custom_field: 'some value'})
+      sign_in(user, scope: :user)
+      patch(:update, params: {id: entry, entry: {custom_field: 'some value'}})
 
       expect(entry.reload.custom_field).to eq(nil)
     end
@@ -869,11 +891,13 @@ describe Admin::EntriesController do
     it 'redirects back to tab' do
       entry = create(:entry)
 
-      sign_in(create(:user, :admin))
+      sign_in(create(:user, :admin), scope: :user)
       patch(:update,
-            id: entry.id,
-            entry: {},
-            tab: 'features')
+            params: {
+              id: entry.id,
+              entry: {},
+              tab: 'features'
+            })
 
       expect(response).to redirect_to(admin_entry_path(entry, tab: 'features'))
     end
@@ -884,8 +908,8 @@ describe Admin::EntriesController do
       user = create(:user)
       entry = create(:entry, with_previewer: user)
 
-      sign_in(user)
-      get(:preview, id: entry)
+      sign_in(user, scope: :user)
+      get(:preview, params: {id: entry})
 
       expect(response).to redirect_to("/revisions/#{entry.draft.id}")
     end
@@ -894,8 +918,8 @@ describe Admin::EntriesController do
       user = create(:user)
       entry = create(:entry)
 
-      sign_in(user)
-      get(:preview, id: entry)
+      sign_in(user, scope: :user)
+      get(:preview, params: {id: entry})
 
       expect(response).to redirect_to(admin_root_path)
     end
@@ -909,7 +933,7 @@ describe Admin::EntriesController do
       sign_in(create(:user))
 
       expect do
-        post(:snapshot, id: entry.id)
+        post(:snapshot, params: {id: entry.id})
       end.not_to change { entry.revisions.count }
     end
 
@@ -918,22 +942,22 @@ describe Admin::EntriesController do
       account = create(:account, with_editor: user)
       entry = create(:entry, account: account)
 
-      sign_in(user)
-      post(:snapshot, id: entry.id)
+      sign_in(user, scope: :user)
+      post(:snapshot, params: {id: entry.id})
 
       expect do
-        post(:snapshot, id: entry.id)
+        post(:snapshot, params: {id: entry.id})
       end.to change { entry.revisions.count }
     end
 
     it 'allows admin to snapshot entries of other accounts' do
       entry = create(:entry)
 
-      sign_in(create(:user, :admin))
-      post(:snapshot, id: entry.id)
+      sign_in(create(:user, :admin), scope: :user)
+      post(:snapshot, params: {id: entry.id})
 
       expect do
-        post(:snapshot, id: entry.id)
+        post(:snapshot, params: {id: entry.id})
       end.to change { entry.revisions.count }
     end
 
@@ -941,11 +965,11 @@ describe Admin::EntriesController do
       user = create(:user)
       entry = create(:entry, with_editor: user)
 
-      sign_in(user)
-      post(:snapshot, id: entry.id)
+      sign_in(user, scope: :user)
+      post(:snapshot, params: {id: entry.id})
 
       expect do
-        post(:snapshot, id: entry.id)
+        post(:snapshot, params: {id: entry.id})
       end.to change { entry.revisions.count }
     end
   end
@@ -956,10 +980,10 @@ describe Admin::EntriesController do
       account = create(:account, with_editor: user)
       entry = create(:entry, account: account, with_editor: user)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
       expect do
-        post(:duplicate, id: entry.id)
+        post(:duplicate, params: {id: entry.id})
       end.not_to change { Pageflow::Entry.count }
     end
 
@@ -967,10 +991,10 @@ describe Admin::EntriesController do
       user = create(:user)
       entry = create(:entry, with_publisher: user)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
       expect do
-        post(:duplicate, id: entry.id)
+        post(:duplicate, params: {id: entry.id})
       end.to change { Pageflow::Entry.count }
     end
 
@@ -978,10 +1002,10 @@ describe Admin::EntriesController do
       create(:account)
       entry = create(:entry)
 
-      sign_in(create(:user, :admin))
+      sign_in(create(:user, :admin), scope: :user)
 
       expect do
-        post(:duplicate, id: entry.id)
+        post(:duplicate, params: {id: entry.id})
       end.to change { Pageflow::Entry.count }
     end
   end
@@ -992,9 +1016,9 @@ describe Admin::EntriesController do
       account = create(:account, with_manager: user)
       entry = create(:entry, account: account)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
-      expect { delete(:destroy, id: entry) }.to change { Pageflow::Entry.count }
+      expect { delete(:destroy, params: {id: entry}) }.to change { Pageflow::Entry.count }
     end
 
     it 'does not allow account publisher and entry manager to destroy entry' do
@@ -1002,18 +1026,49 @@ describe Admin::EntriesController do
       account = create(:account, with_publisher: user)
       entry = create(:entry, with_manager: user, account: account)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
-      expect { delete(:destroy, id: entry) }.not_to change { Pageflow::Entry.count }
+      expect { delete(:destroy, params: {id: entry}) }.not_to change { Pageflow::Entry.count }
     end
 
     it 'allows admin to destroy entry' do
       user = create(:user, :admin)
       entry = create(:entry)
 
-      sign_in(user)
+      sign_in(user, scope: :user)
 
-      expect { delete(:destroy, id: entry) }.to change { Pageflow::Entry.count }
+      expect { delete(:destroy, params: {id: entry}) }.to change { Pageflow::Entry.count }
+    end
+  end
+
+  describe 'get #entry_types' do
+    render_views
+
+    it 'allows to display entry types for account publisher' do
+      account = create(:account)
+
+      sign_in(create(:user, :manager, on: account))
+      get(:entry_types, params: {account_id: account}, format: 'json')
+
+      expect(response.status).to eq(200)
+    end
+
+    it 'does not render layout' do
+      account = create(:account)
+
+      sign_in(create(:user, :publisher, on: account))
+      get(:entry_types, params: {account_id: account}, format: 'json')
+
+      expect(response.body).not_to have_selector('body.active_admin')
+    end
+
+    it 'is forbidden for account editor' do
+      account = create(:account)
+
+      sign_in(create(:user, :editor, on: account))
+      get(:entry_types, params: {account_id: account}, format: 'json')
+
+      expect(response.status).to eq(403)
     end
   end
 end

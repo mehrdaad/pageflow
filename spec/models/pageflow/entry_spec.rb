@@ -3,6 +3,12 @@ require 'spec_helper'
 module Pageflow
   describe Entry do
     context 'on create' do
+      before do
+        pageflow_configure do |config|
+          TestEntryType.register(config, name: 'test')
+        end
+      end
+
       it 'creates a draft' do
         entry = create(:entry)
 
@@ -15,17 +21,27 @@ module Pageflow
         expect(entry.draft).to be_blank
       end
 
-      it 'sets draft home_button_enabled to home_button_enabled_by_default of accounts default_theming' do
-        theming = create(:theming, home_button_enabled_by_default: true)
-        entry = create(:entry, theming: theming)
+      it 'sets draft config to config of available entry template' do
+        entry_template = create(:entry_template,
+                                configuration: {color_scheme: 'purple'},
+                                entry_type_name: 'test')
+        entry = create(:entry,
+                       account: entry_template.account,
+                       type_name: entry_template.entry_type_name)
 
-        expect(entry.draft.home_button_enabled).to eq(theming.home_button_enabled_by_default)
+        expect(entry.draft.configuration['color_scheme'])
+          .to eq(entry_template.configuration['color_scheme'])
       end
 
-      it 'copies widgets from theming to draft' do
-        theming = create(:theming)
-        create(:widget, subject: theming, role: 'header', type_name: 'theming_header')
-        entry = create(:entry, theming: theming)
+      it 'copies widgets from entry template to draft' do
+        entry_template = create(:entry_template, entry_type_name: 'test')
+        create(:widget,
+               subject: entry_template,
+               role: 'header',
+               type_name: 'theming_header')
+        entry = create(:entry,
+                       account: entry_template.account,
+                       type_name: entry_template.entry_type_name)
 
         expect(entry.draft.widgets).to include_record_with(role: 'header', type_name: 'theming_header')
       end
@@ -36,9 +52,15 @@ module Pageflow
         expect(entry.draft.storylines).not_to be_empty
       end
 
-      it 'copies meta defaults from the theming' do
-        theming = create(:theming, default_author: 'Codevise', default_publisher: 'Codevise Solutions', default_keywords: 'codevise, story')
-        entry = create(:entry, theming: theming)
+      it 'copies meta defaults from entry template' do
+        entry_template = create(:entry_template,
+                                default_author: 'Codevise',
+                                default_publisher: 'Codevise Solutions',
+                                default_keywords: 'codevise, story',
+                                entry_type_name: 'test')
+        entry = create(:entry,
+                       type_name: entry_template.entry_type_name,
+                       account: entry_template.account)
 
         expect(entry.draft.author).to eq('Codevise')
         expect(entry.draft.publisher).to eq('Codevise Solutions')
@@ -60,6 +82,18 @@ module Pageflow
       end
     end
 
+    describe '#entry_type' do
+      it 'returns entry type' do
+        pageflow_configure do |config|
+          TestEntryType.register(config, name: 'test')
+        end
+
+        entry = create(:entry, type_name: 'test')
+
+        expect(entry.entry_type.name).to eq('test')
+      end
+    end
+
     context 'validation' do
       it 'ensures folder belongs to same account' do
         folder = build(:folder, account: build_stubbed(:account))
@@ -68,6 +102,17 @@ module Pageflow
         entry.folder = folder
 
         expect(entry).to have(1).error_on(:folder)
+      end
+
+      it 'ensures entry type is available for account' do
+        account = create(:account, features_configuration: {'paged_entry_type' => false})
+        entry = build(
+          :entry,
+          type_name: 'paged',
+          account: account
+        )
+
+        expect(entry).to have(1).error_on(:type_name)
       end
     end
 
@@ -303,7 +348,7 @@ module Pageflow
 
           entry.restore(revision: earlier_revision, creator: creator)
 
-          expect(entry.draft(true).title).to eq('the way it was')
+          expect(entry.reload_draft.title).to eq('the way it was')
         end
 
         it 'resets password_protected flag' do
@@ -317,7 +362,7 @@ module Pageflow
 
           entry.restore(revision: earlier_revision, creator: creator)
 
-          expect(entry.draft(true)).not_to be_password_protected
+          expect(entry.reload_draft).not_to be_password_protected
         end
       end
 
@@ -329,7 +374,7 @@ module Pageflow
 
           entry.restore(revision: earlier_revision, creator: creator)
 
-          expect(entry.draft(true).title).to eq('the way it was')
+          expect(entry.reload_draft.title).to eq('the way it was')
         end
 
         it 'resets snapshot type' do
@@ -339,7 +384,7 @@ module Pageflow
 
           entry.restore(revision: earlier_revision, creator: creator)
 
-          expect(Revision.auto_snapshots).not_to include(entry.draft(true))
+          expect(Revision.auto_snapshots).not_to include(entry.reload_draft)
         end
       end
 
@@ -361,7 +406,7 @@ module Pageflow
 
         entry.restore(revision: earlier_revision, creator: creator)
 
-        expect(entry.draft(true).restored_from).to eq(earlier_revision)
+        expect(entry.reload_draft.restored_from).to eq(earlier_revision)
       end
     end
 

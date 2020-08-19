@@ -35,17 +35,13 @@ gsub_file('app/assets/javascripts/application.js', %r'//=.*', '')
 
 # Recreate db. Ignore if it does not exist.
 
-log :rake, 'db:drop:all'
-in_root { run('rake db:drop:all 2> /dev/null', verbose: false) }
-
+in_root { run('rake db:environment:set db:drop:all', capture: true, abort_on_failure: false) }
 rake 'db:create:all'
 
 # Install pageflow and the tested engine via their generators.
 
 generate 'pageflow:install', '--force'
 generate "#{ENV['PAGEFLOW_PLUGIN_ENGINE']}:install", '--force' if ENV['PAGEFLOW_PLUGIN_ENGINE']
-
-run 'rm -r spec'
 
 # Devise needs default_url_options for generating mails.
 
@@ -59,10 +55,32 @@ prepend_to_file('config/initializers/pageflow.rb', <<-END)
   ActiveAdmin.application.load_paths.unshift(Dir[Rails.root.join('app/admin')].first)\n
 END
 
+# Add required files for test theme
+
+copy_file('test_theme.scss',
+          'app/assets/stylesheets/pageflow/themes/test_theme.scss')
+copy_file('test_theme_preview.png',
+          'app/assets/images/pageflow/themes/test_theme/preview.png')
+copy_file('test_theme_preview.png',
+          'app/assets/images/pageflow/themes/test_theme/preview_thumbnail.png')
+
+# Normally theme stylesheets are added to the precompile list
+# automatically. Since the test_theme is not yet registered when the
+# environment is loaded, we need to add its stylesheet manually.
+
+append_to_file('config/initializers/assets.rb', <<-END)
+  Rails.application.config.assets.precompile += %w( pageflow/themes/test_theme.css )
+END
+
 # Create database tables for fake hosted files and revision components.
 
-copy_file('create_test_hosted_file.rb', 'db/migrate/00000000000000_create_test_hosted_file.rb')
-copy_file('create_test_revision_component.rb', 'db/migrate/00000000000001_create_test_revision_component.rb')
-copy_file('add_custom_fields.rb', 'db/migrate/99990000000000_add_custom_fields.rb')
+copy_file('create_test_uploadable_file.rb',
+          'db/migrate/00000000000000_create_test_uploadable_file.rb')
+copy_file('create_test_multi_attachment_file.rb',
+          'db/migrate/00000000000001_create_test_multi_attachment_file.rb')
+copy_file('create_test_revision_component.rb',
+          'db/migrate/00000000000002_create_test_revision_component.rb')
+copy_file('add_custom_fields.rb',
+          'db/migrate/99990000000000_add_custom_fields.rb')
 
 rake 'db:migrate db:test:load', env: 'development'

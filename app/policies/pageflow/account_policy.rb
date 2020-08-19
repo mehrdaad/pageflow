@@ -88,6 +88,16 @@ module Pageflow
          query.has_at_least_role?(:manager))
     end
 
+    def see_user_quota?
+      user.admin? ||
+        query.has_at_least_role?(:manager)
+    end
+
+    def see_entry_types?
+      user.admin? ||
+        query.has_at_least_role?(:publisher)
+    end
+
     def edit_role_on?
       user.admin? || query.has_at_least_role?(:manager)
     end

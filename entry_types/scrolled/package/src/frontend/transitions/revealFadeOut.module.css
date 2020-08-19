@@ -1,0 +1,29 @@
+@value fade-duration from './values.module.css';
+
+.backdrop {
+  composes: clip from '../utils.module.css';
+  position: absolute;
+  /* We only want to clip the backdrop at the top. Extend it by the
+     height of one viewport to ensure it is still visible when the fade
+     is happening. */
+  height: calc(100% + 100vh);
+}
+
+.backdropInner {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.foreground {
+  transition: opacity fade-duration ease, visibility fade-duration;
+}
+
+.foreground-above {
+  opacity: 0;
+  visibility: hidden;
+}

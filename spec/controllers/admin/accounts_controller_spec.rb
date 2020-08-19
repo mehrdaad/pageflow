@@ -12,7 +12,7 @@ module Admin
               user = create(:user, :admin)
               create(:account, features_configuration: {some_feature: true})
 
-              sign_in(user)
+              sign_in(user, scope: :user)
               get(:index, format: format)
 
               expect(response.body).not_to include('some_feature')
@@ -30,10 +30,10 @@ module Admin
           user = create(:user)
           account = create(:account, with_manager: user)
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
-          expect(response.body).to have_selector('.admin_tabs_view .tabs .features')
+          expect(response.body).to have_selector('.admin_tabs_view-tabs .features')
         end
 
         context 'with config.permissions.only_admins_may_update_features' do
@@ -45,10 +45,10 @@ module Admin
             user = create(:user)
             account = create(:account, with_manager: user)
 
-            sign_in(user)
-            get(:show, id: account.id)
+            sign_in(user, scope: :user)
+            get(:show, params: {id: account.id})
 
-            expect(response.body).not_to have_selector('.admin_tabs_view .tabs .features')
+            expect(response.body).not_to have_selector('.admin_tabs_view-tabs .features')
           end
 
           it 'admin sees features tab' do
@@ -59,10 +59,10 @@ module Admin
             user = create(:user, admin: true)
             entry = create(:account)
 
-            sign_in(user)
-            get(:show, id: entry.id)
+            sign_in(user, scope: :user)
+            get(:show, params: {id: entry.id})
 
-            expect(response.body).to have_selector('.admin_tabs_view .tabs .features')
+            expect(response.body).to have_selector('.admin_tabs_view-tabs .features')
           end
         end
 
@@ -70,10 +70,10 @@ module Admin
           user = create(:user)
           account = create(:account, with_publisher: user)
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
-          expect(response.body).not_to have_selector('.admin_tabs_view .tabs .features')
+          expect(response.body).not_to have_selector('.admin_tabs_view-tabs .features')
         end
       end
 
@@ -100,8 +100,8 @@ module Admin
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -115,8 +115,8 @@ module Admin
                                                          name: :some_tab,
                                                          component: tab_view_component,
                                                          admin_only: true)
-            sign_in(user)
-            get(:show, id: account.id)
+            sign_in(user, scope: :user)
+            get(:show, params: {id: account.id})
 
             expect(response.body).to have_selector(tab_view_selector)
           end
@@ -129,8 +129,8 @@ module Admin
                                                          name: :some_tab,
                                                          component: tab_view_component,
                                                          admin_only: true)
-            sign_in(user)
-            get(:show, id: account.id)
+            sign_in(user, scope: :user)
+            get(:show, params: {id: account.id})
 
             expect(response.body).not_to have_selector(tab_view_selector)
           end
@@ -146,8 +146,8 @@ module Admin
             config.admin_attributes_table_rows.register(:account, :custom) { 'custom attribute' }
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).to have_text('custom attribute')
         end
@@ -166,8 +166,8 @@ module Admin
             end
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).to have_text('custom attribute')
         end
@@ -185,8 +185,8 @@ module Admin
             end
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).not_to have_text('custom attribute')
         end
@@ -199,8 +199,8 @@ module Admin
             config.admin_attributes_table_rows.register(:theming, :custom) { 'custom attribute' }
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).to have_text('custom attribute')
         end
@@ -219,8 +219,8 @@ module Admin
             end
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).to have_text('custom attribute')
         end
@@ -238,8 +238,8 @@ module Admin
             end
           end
 
-          sign_in(user)
-          get(:show, id: account.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: account.id})
 
           expect(response.body).not_to have_text('custom attribute')
         end
@@ -247,56 +247,40 @@ module Admin
     end
 
     describe '#create' do
+      render_views
+
       it 'creates nested default_theming' do
-        pageflow_configure do |config|
-          config.themes.register(:custom)
-        end
-
-        sign_in(create(:user, :admin))
-        post(:create, account: {
-               default_theming_attributes: {
-                 theme_name: 'custom',
-                 imprint_link_url: 'http://example.com/new'
-               }
-             })
-
-        expect(Pageflow::Account.last.default_theming.theme_name).to eq('custom')
-      end
-
-      it 'batch updates widgets of default theming' do
-        pageflow_configure do |config|
-          config.themes.register(:custom)
-        end
-
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
         post(:create,
-             account: {
-               default_theming_attributes: {
-                 theme_name: 'custom'
+             params: {
+               account: {
+                 default_theming_attributes: {
+                   imprint_link_url: 'http://example.com/new'
+                 }
                }
-             },
-             widgets: {
-               navigation: 'some_widget'
              })
 
-        expect(Pageflow::Account.last.default_theming.widgets)
-          .to include_record_with(role: 'navigation', type_name: 'some_widget')
+        expect(Pageflow::Theming.last.imprint_link_url)
+          .to eq('http://example.com/new')
       end
 
-      it 'does not create widgets if account cannot be saved' do
+      it 'creates no paged entry template' do
         pageflow_configure do |config|
-          config.themes.register(:custom)
+          config.themes.register(:red)
         end
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
+        post(:create,
+             params: {
+               account: {
+                 paged_entry_template_attributes: {
+                   theme_name: 'red'
+                 }
+               }
+             })
+        entry_templates_count = Pageflow::EntryTemplate.all.count
 
-        expect do
-          post(:create,
-               account: {},
-               widgets: {
-                 navigation: 'some_widget'
-               })
-        end.not_to change { Pageflow::Widget.count }
+        expect(entry_templates_count).to eq(0)
       end
     end
 
@@ -310,8 +294,8 @@ module Admin
           config.admin_form_inputs.register(:account, :custom_field)
         end
 
-        sign_in(create(:user, :admin))
-        get :edit, id: account
+        sign_in(create(:user, :admin), scope: :user)
+        get :edit, params: {id: account}
 
         expect(response.body).to have_selector('[name="account[custom_field]"]')
       end
@@ -323,8 +307,8 @@ module Admin
           config.admin_form_inputs.register(:theming, :custom_field)
         end
 
-        sign_in(create(:user, :admin))
-        get :edit, id: account
+        sign_in(create(:user, :admin), scope: :user)
+        get :edit, params: {id: account}
 
         expect(response.body)
           .to have_selector('[name="account[default_theming_attributes][custom_field]"]')
@@ -332,6 +316,8 @@ module Admin
     end
 
     describe '#update' do
+      render_views
+
       it 'updates nested default_theming' do
         pageflow_configure do |config|
           config.themes.register(:custom)
@@ -339,60 +325,30 @@ module Admin
         theming = create(:theming)
         account = create(:account, default_theming: theming)
 
-        sign_in(create(:user, :admin))
-        put(:update, id: account.id, account: {
+        sign_in(create(:user, :admin), scope: :user)
+        put(:update, params: {id: account.id, account: {
               default_theming_attributes: {
-                theme_name: 'custom',
                 imprint_link_url: 'http://example.com/new'
+              },
+              paged_entry_template_attributes: {
+                theme_name: 'custom'
               }
-            })
+            }})
 
-        expect(theming.reload.theme_name).to eq('custom')
-        expect(theming.imprint_link_url).to eq('http://example.com/new')
-      end
-
-      it 'batch updates widgets of default theming' do
-        theming = create(:theming)
-        account = create(:account, default_theming: theming)
-
-        sign_in(create(:user, :admin))
-        patch(:update,
-              id: account.id,
-              widgets: {
-                navigation: 'some_widget'
-              })
-
-        expect(theming.widgets).to include_record_with(role: 'navigation', type_name: 'some_widget')
-      end
-
-      it 'does not update widgets if theming validation fails' do
-        theming = create(:theming)
-        account = create(:account, default_theming: theming)
-
-        sign_in(create(:user, :admin))
-        expect do
-          patch(:update,
-                id: account.id,
-                account: {
-                  default_theming_attributes: {
-                    theme_name: 'invalid'
-                  }
-                },
-                widgets: {
-                  navigation: 'some_widget'
-                })
-        end.not_to change { Pageflow::Widget.count }
+        expect(theming.reload.imprint_link_url).to eq('http://example.com/new')
       end
 
       it 'allows admin to update feature_configuration through feature_states param' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
         patch(:update,
-              id: account.id,
-              account: {
-                feature_states: {
-                  fancy_page_type: 'enabled'
+              params: {
+                id: account.id,
+                account: {
+                  feature_states: {
+                    fancy_page_type: 'enabled'
+                  }
                 }
               })
 
@@ -403,12 +359,14 @@ module Admin
         user = create(:user)
         account = create(:account, with_manager: user)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         patch(:update,
-              id: account.id,
-              account: {
-                feature_states: {
-                  fancy_page_type: 'enabled'
+              params: {
+                id: account.id,
+                account: {
+                  feature_states: {
+                    fancy_page_type: 'enabled'
+                  }
                 }
               })
 
@@ -419,12 +377,14 @@ module Admin
         user = create(:user)
         account = create(:account, with_publisher: user)
 
-        sign_in(user)
+        sign_in(user, scope: :user)
         patch(:update,
-              id: account.id,
-              account: {
-                feature_states: {
-                  fancy_page_type: 'enabled'
+              params: {
+                id: account.id,
+                account: {
+                  feature_states: {
+                    fancy_page_type: 'enabled'
+                  }
                 }
               })
 
@@ -439,12 +399,14 @@ module Admin
 
           account = create(:account)
 
-          sign_in(create(:user, :admin))
+          sign_in(create(:user, :admin), scope: :user)
           patch(:update,
-                id: account.id,
-                account: {
-                  feature_states: {
-                    fancy_page_type: 'enabled'
+                params: {
+                  id: account.id,
+                  account: {
+                    feature_states: {
+                      fancy_page_type: 'enabled'
+                    }
                   }
                 })
 
@@ -459,12 +421,14 @@ module Admin
           user = create(:user)
           account = create(:account, with_manager: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:update,
-                id: account.id,
-                account: {
-                  feature_states: {
-                    fancy_page_type: 'enabled'
+                params: {
+                  id: account.id,
+                  account: {
+                    feature_states: {
+                      fancy_page_type: 'enabled'
+                    }
                   }
                 })
 
@@ -479,8 +443,8 @@ module Admin
           config.admin_form_inputs.register(:account, :custom_field)
         end
 
-        sign_in(create(:user, :admin))
-        patch(:update, id: account, account: {custom_field: 'some value'})
+        sign_in(create(:user, :admin), scope: :user)
+        patch(:update, params: {id: account, account: {custom_field: 'some value'}})
 
         expect(account.reload.custom_field).to eq('some value')
       end
@@ -488,8 +452,8 @@ module Admin
       it 'does not update account custom field not registered as form input' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
-        patch(:update, id: account, account: {custom_field: 'some value'})
+        sign_in(create(:user, :admin), scope: :user)
+        patch(:update, params: {id: account, account: {custom_field: 'some value'}})
 
         expect(account.reload.custom_field).to eq(nil)
       end
@@ -501,12 +465,14 @@ module Admin
           config.admin_form_inputs.register(:theming, :custom_field)
         end
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
         patch(:update,
-              id: account,
-              account: {
-                default_theming_attributes: {
-                  custom_field: 'some value'
+              params: {
+                id: account,
+                account: {
+                  default_theming_attributes: {
+                    custom_field: 'some value'
+                  }
                 }
               })
 
@@ -516,12 +482,14 @@ module Admin
       it 'does not update custom field of nested theming not registered as form input' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
         patch(:update,
-              id: account,
-              account: {
-                default_theming_attributes: {
-                  custom_field: 'some value'
+              params: {
+                id: account,
+                account: {
+                  default_theming_attributes: {
+                    custom_field: 'some value'
+                  }
                 }
               })
 
@@ -531,11 +499,13 @@ module Admin
       it 'redirects back to tab' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
         patch(:update,
-              id: account.id,
-              account: {},
-              tab: 'features')
+              params: {
+                id: account.id,
+                account: {},
+                tab: 'features'
+              })
 
         expect(response).to redirect_to(admin_account_path(tab: 'features'))
       end
@@ -545,27 +515,27 @@ module Admin
       it 'allows to destroy empty account' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
 
-        expect { delete :destroy, id: account }.to change { Pageflow::Account.count }
+        expect { delete :destroy, params: {id: account} }.to change { Pageflow::Account.count }
       end
 
       it 'does not allow to destroy account with user' do
         account = create(:account)
         create(:user, :member, on: account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
 
-        expect { delete :destroy, id: account }.not_to change { Pageflow::Account.count }
+        expect { delete :destroy, params: {id: account} }.not_to change { Pageflow::Account.count }
       end
 
       it 'does not allow to destroy account with entry' do
         account = create(:account)
         create(:entry, account: account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
 
-        expect { delete :destroy, id: account }.not_to change { Pageflow::Account.count }
+        expect { delete :destroy, params: {id: account} }.not_to change { Pageflow::Account.count }
       end
     end
   end

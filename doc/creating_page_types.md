@@ -43,7 +43,7 @@ the recommended React-based approach include:
 * [`pageflow-timeline-page`](https://github.com/codevise/pageflow-timeline-page)
 * [`pageflow-vr`](https://github.com/codevise/pageflow-vr)
 * All of the
-  [built in page types](https://github.com/codevise/pageflow/tree/master/node_package/src/builtInPageTypes). Note
+  [built in page types](https://github.com/codevise/pageflow/tree/master/entry_types/paged/packages/pageflow-paged-react/src/builtInPageTypes). Note
   that the Pageflow gem itself internally
   [uses a Webpack-based build process](contributing/directory_layout_overview.md). This
   causes the source code to have a different shape than in the
@@ -259,8 +259,12 @@ that users of our plugin can reference in their Pageflow initializer:
 module Rainbow
   class Plugin < Pageflow::Plugin
     def configure(config)
-      config.page_types.register(Pageflow::React.create_page_type('rainbow'))
+      config.page_types.register(Rainbow.page_type)
     end
+  end
+
+  def self.page_type
+    Pageflow::React.create_page_type('rainbow')
   end
 
   def self.plugin
@@ -284,3 +288,16 @@ There are some advanced customizations:
 
 * [Defining thumbnail candidates](#)
 * [Defining revision components](#)
+
+## Using Shared Examples to Test Integration
+
+Pageflow provides a set of shared examples that can be used in a
+plugin's test suite to ensure the page type integrates correctly:
+
+```ruby
+# rainbow/spec/integration/page_type_spec.rb
+require 'spec_helper'
+require 'pageflow/lint'
+
+Pageflow::Lint.page_type(Pageflow::Rainbow.page_type)
+```

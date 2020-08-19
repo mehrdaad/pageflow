@@ -14,10 +14,14 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
+task 'release' do
+  Rake.application['pageflow:release:pageflow_support'].invoke
+end
+
 require 'semmy'
 Semmy::Tasks.install do |config|
   config.github_repository = 'codevise/pageflow'
-  config.source_files_with_docs_tags = '{app,lib,node_package/src}/**/*.{js,jsx,rb,scss}'
+  config.source_files_with_docs_tags = '{app,lib,packages/*/src,spec/support/pageflow}/**/*.{js,jsx,rb,scss}'
 end
 
 require File.expand_path('spec/support/pageflow/dummy/app', File.dirname(__FILE__))
@@ -28,4 +32,4 @@ load File.expand_path('lib/tasks/pageflow_tasks.rake', File.dirname(__FILE__))
 
 Bundler::GemHelper.install_tasks
 
-task 'release:prepare' => 'pageflow:node_package:build'
+task 'release:prepare' => 'pageflow:packages:build'

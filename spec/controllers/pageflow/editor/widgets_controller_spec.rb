@@ -7,7 +7,9 @@ module Pageflow
       render_views
 
       before do
-        Pageflow.config.widget_types.clear
+        pageflow_configure do |config|
+          config.widget_types.clear
+        end
       end
 
       describe '#index' do
@@ -16,11 +18,12 @@ module Pageflow
           entry = create(:entry, with_editor: user)
           create(:widget, subject: entry.draft, type_name: 'test_widget')
 
-          sign_in(user)
-          get(:index, collection_name: 'entries', subject_id: entry.id, format: 'json')
+          sign_in(user, scope: :user)
+          get(:index, params: {collection_name: 'entries', subject_id: entry.id}, format: 'json')
 
           expect(response.status).to eq(200)
-          expect(json_response(path: [0, :type_name])).to eq('test_widget')
+          response_widget = json_response.detect { |w| w['type_name'] == 'test_widget' }
+          expect(response_widget).not_to be_nil
         end
 
         it 'includes widget configuration in response' do
@@ -31,44 +34,48 @@ module Pageflow
                  type_name: 'test_widget',
                  configuration: {some: 'value'})
 
-          sign_in(user)
-          get(:index, collection_name: 'entries', subject_id: entry.id, format: 'json')
+          sign_in(user, scope: :user)
+          get(:index, params: {collection_name: 'entries', subject_id: entry.id}, format: 'json')
 
           expect(response.status).to eq(200)
-          expect(json_response(path: [0, :configuration, :some])).to eq('value')
+          response_widget = json_response.detect { |w| w['type_name'] == 'test_widget' }
+          expect(response_widget['configuration']).to eq('some' => 'value')
         end
 
         it 'requires permission to edit entry' do
           user = create(:user)
           entry = create(:entry, with_previewer: user)
 
-          sign_in(user)
-          get(:index, collection_name: 'entries', subject_id: entry.id, format: 'json')
+          sign_in(user, scope: :user)
+          get(:index, params: {collection_name: 'entries', subject_id: entry.id}, format: 'json')
 
           expect(response.status).to eq(403)
         end
 
-        it 'responds with widgets of theming' do
+        it 'responds with widgets of entry template' do
           user = create(:user, :admin)
           account = create(:account)
-          theming = create(:theming, account: account)
-          create(:widget, subject: theming, type_name: 'test_widget')
+          entry_template = create(:entry_template, account: account)
+          create(:widget, subject: entry_template, type_name: 'test_widget')
 
-          sign_in(user)
-          get(:index, collection_name: 'themings', subject_id: theming.id, format: 'json')
+          sign_in(user, scope: :user)
+          get(:index, params: {collection_name: 'entry_templates',
+                               subject_id: entry_template.id}, format: 'json')
 
           expect(response.status).to eq(200)
-          expect(json_response(path: [0, :type_name])).to eq('test_widget')
+          response_widget = json_response.detect { |w| w['type_name'] == 'test_widget' }
+          expect(response_widget).not_to be_nil
         end
 
-        it 'requires permission to index themings' do
+        it 'requires permission to index entry templates' do
           user = create(:user)
           account = create(:account, with_manager: user)
-          theming = create(:theming, account: account)
-          create(:widget, subject: theming, type_name: 'test_widget')
+          entry_template = create(:entry_template, account: account)
+          create(:widget, subject: entry_template, type_name: 'test_widget')
 
-          sign_in(user)
-          get(:index, collection_name: 'themings', subject_id: theming.id, format: 'json')
+          sign_in(user, scope: :user)
+          get(:index, params: {collection_name: 'entry_templates',
+                               subject_id: entry_template.id}, format: 'json')
 
           expect(response.status).to eq(403)
         end
@@ -78,7 +85,7 @@ module Pageflow
           entry = create(:entry)
           create(:membership, user: user, entity: entry.account, role: :manager)
 
-          get(:index, collection_name: 'entries', subject_id: entry.id, format: 'json')
+          get(:index, params: {collection_name: 'entries', subject_id: entry.id}, format: 'json')
 
           expect(response.status).to eq(401)
         end
@@ -89,13 +96,15 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_editor: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(entry.draft.widgets).to include_record_with(type_name: 'test_widget',
@@ -110,17 +119,19 @@ module Pageflow
                           role: 'navigation',
                           type_name: 'test_widget')
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {
-                    role: 'navigation',
-                    type_name: 'other_test_widget',
-                    configuration: {some: 'value'}
-                  }
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {
+                      role: 'navigation',
+                      type_name: 'other_test_widget',
+                      configuration: {some: 'value'}
+                    }
+                  ]
+                },
                 format: 'json')
 
           expect(widget.reload.type_name).to eq('other_test_widget')
@@ -136,16 +147,18 @@ module Pageflow
                           type_name: 'test_widget',
                           configuration: {some: 'value'})
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {
-                    role: 'navigation',
-                    type_name: 'other_test_widget'
-                  }
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {
+                      role: 'navigation',
+                      type_name: 'other_test_widget'
+                    }
+                  ]
+                },
                 format: 'json')
 
           expect(widget.reload.type_name).to eq('other_test_widget')
@@ -156,13 +169,15 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_previewer: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(403)
@@ -172,13 +187,15 @@ module Pageflow
           user = create(:user, :admin)
           entry = create(:entry)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(200)
@@ -189,13 +206,15 @@ module Pageflow
           account = create(:account, with_editor: user)
           entry = create(:entry, account: account)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(200)
@@ -206,81 +225,91 @@ module Pageflow
           create(:account, with_manager: user)
           entry = create(:entry)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(403)
         end
 
-        it 'allows account publisher to edit theming of own account' do
+        it 'allows account publisher to edit entry template of own account' do
           user = create(:user)
           account = create(:account, with_publisher: user)
-          theming = create(:theming, account: account)
+          entry_template = create(:entry_template, account: account)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'themings',
-                subject_id: theming.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entry_templates',
+                  subject_id: entry_template.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(200)
         end
 
-        it 'does not allow account editor to edit theming' do
+        it 'does not allow account editor to edit entry template' do
           user = create(:user)
           account = create(:account, with_editor: user)
-          theming = create(:theming, account: account)
-          create(:widget, subject: theming, type_name: 'test_widget')
+          entry_template = create(:entry_template, account: account)
+          create(:widget, subject: entry_template, type_name: 'test_widget')
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'themings',
-                subject_id: theming.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entry_templates',
+                  subject_id: entry_template.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(403)
         end
 
-        it 'does not allow account manager to edit theming of other account' do
+        it 'does not allow account manager to edit entry template of other account' do
           user = create(:user)
           create(:account, with_manager: user)
-          theming = create(:theming)
+          entry_template = create(:entry_template)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'themings',
-                subject_id: theming.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entry_templates',
+                  subject_id: entry_template.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(403)
         end
 
-        it 'allows admin to edit arbitrary theming' do
+        it 'allows admin to edit arbitrary entry template' do
           user = create(:user, :admin)
-          theming = create(:theming)
+          entry_template = create(:entry_template)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           patch(:batch,
-                collection_name: 'themings',
-                subject_id: theming.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entry_templates',
+                  subject_id: entry_template.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(200)
@@ -291,11 +320,13 @@ module Pageflow
           entry = create(:entry, with_manager: user)
 
           patch(:batch,
-                collection_name: 'entries',
-                subject_id: entry.id,
-                widgets: [
-                  {role: 'navigation', type_name: 'other_test_widget'}
-                ],
+                params: {
+                  collection_name: 'entries',
+                  subject_id: entry.id,
+                  widgets: [
+                    {role: 'navigation', type_name: 'other_test_widget'}
+                  ]
+                },
                 format: 'json')
 
           expect(response.status).to eq(401)

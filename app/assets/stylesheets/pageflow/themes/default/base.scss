@@ -16,15 +16,20 @@
 
 @import "./built_in_page_types";
 @import "./anchors";
-@import "./loading_spinner";
+@import "./cookie_notice_bar";
 @import "./logo";
 @import "./page";
+@import "./loading_spinner";
 @import "./indicators";
 @import "./navigation";
+@import "./navigation_share_box";
 @import "./mobile_navigation";
+@import "./background_media_unmute_button";
+@import "./multimedia_alert";
 @import "./overview";
 @import "./player_controls";
 @import "./video_player";
-@import "./video_wrapper";
+@import "./uncropped_media_wrapper";
 @import "./text_track_cues";
 @import "./slideshow";
+@import "./probes";

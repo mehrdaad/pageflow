@@ -8,7 +8,7 @@ The code in the following example is taken from the
 `pageflow-panorama` engine, which adds the ability to upload zip files
 containing 360° degree panoramas.
 
-# The Basic Setup
+## Uploadable Files
 
 First let us a create an ActiveRecord model to hold the data
 associated with the new type of file:
@@ -17,22 +17,43 @@ associated with the new type of file:
     module Pageflow
       module Panorama
         class Package < ActiveRecord::Base
-          include HostedFile
+          include UploadableFile
         end
       end
     end
 
-Including the `Pageflow::HostedFile` module provides the base
+Including the `Pageflow::UploadableFile` module provides the base
 functionality of associating files with entries and handling storage
-of uploaded files. In the corresponding migration you can use the
-`Pageflow::HostedFile.columns` to provide the required columns for the
-model.
+of uploaded files. In the corresponding migration you need to provide
+the required columns for the model.
 
-    # db/migrate/xxxxx_create_package.rb
-    class CreateTestHostedFile < ActiveRecord::Migration
+    # db/migrate/xxxxx_create_my_file.rb
+    class CreateMyFile < ActiveRecord::Migration
       def change
-        create_table :pageflow_panorama_packages do |t|
-          Pageflow::HostedFile.columns(t)
+        create_table :my_files do |t|
+          t.belongs_to(:entry, index: true)
+          t.belongs_to(:uploader, index: true)
+
+          t.integer(:parent_file_id)
+          t.string(:parent_file_model_type)
+          t.index([:parent_file_id, :parent_file_model_type])
+
+          t.string(:state)
+          t.string(:rights)
+
+          t.string(:attachment_on_filesystem_file_name)
+          t.string(:attachment_on_filesystem_content_type)
+          t.integer(:attachment_on_filesystem_file_size, limit: 8)
+          t.datetime(:attachment_on_filesystem_updated_at)
+
+          t.string(:attachment_on_s3_file_name)
+          t.string(:attachment_on_s3_content_type)
+          t.integer(:attachment_on_s3_file_size, limit: 8)
+          t.datetime(:attachment_on_s3_updated_at)
+
+          # Further custom columns...
+
+          t.timestamps
         end
       end
     end
@@ -54,17 +75,17 @@ whenever the page type is registered in a Pageflow application.
         end
 
         def self.package_file_type
-          FileType.new(model: Package)
+          FileType.new(model: 'Pageflow::Panorama::Package')
         end
       end
     end
 
 Now it is time for the editor integration. First define a Backbone
 model to handle client side persistence for the new type of
-files. Simply extend `pageflow.HostedFile`:
+files. Simply extend `pageflow.UploadableFile`:
 
     # app/assets/javascripts/pageflow/panorama/editor/models/package.js
-    pageflow.panorama.Package = pageflow.HostedFile.extend({
+    pageflow.panorama.Package = pageflow.UploadableFile.extend({
     });
 
 Just like in the server side code we need to register the newly
@@ -92,7 +113,7 @@ JSON data passed to the editor. In order to do so, set the
     module Pageflow
       module
         def self.package_file_type
-          FileType.new(model: Package,
+          FileType.new(model: 'Pageflow::Panorama::Package',
                        editor_partial: 'pageflow/panorama/editor/packages/package')
         end
       end
@@ -103,9 +124,9 @@ attributes that shall be included in the JSON represenation of the
 file passed to the editor.
 
     # app/views/pageflow/panorama/editor/packages/_package.json.jbuilder
-    json.(:index_url)
+    json.(:index_document_path)
 
-Given the above partial, the `'index_url'` attribute is now available
+Given the above partial, the `index_document_path` attribute is now available
 in the Backbone model.
 
 ## Custom Meta Data Items
@@ -145,10 +166,10 @@ can also create a custom view by extending
 
 ## Custom Processing Stages
 
-The `HostedFile` mixin defines a state machine which captures the
+The `UploadableFile` mixin defines a state machine which captures the
 process of storing an attachment on S3. Often though, additional
 processing steps are required: image files need to be resized, videos
-require transcoding. The `HostedFile` mixin therefore provides a way
+require transcoding. The `UploadableFile` mixin therefore provides a way
 to extend the state machine associated with a file via the
 `processing_state_machine` method. The basic state machine DSL is
 defined by the
@@ -168,7 +189,7 @@ a custom Resque job provided by the `pageflow-panorama` gem.
     module Pageflow
       module Panorama
         class Package < ActiveRecord::Base
-          include HostedFile
+          include UploadableFile
 
           processing_state_machine do
             state 'unpacking'
@@ -177,10 +198,6 @@ a custom Resque job provided by the `pageflow-panorama` gem.
 
             event :process do
               transition any => 'unpacking'
-            end
-
-            event :retry do
-              transition 'unpacking_failed' => 'unpacking'
             end
 
             job UnpackPackageJob do
@@ -198,7 +215,7 @@ will be visualized in the Pageflow editor. Moreover, Pageflow needs to
 know when a file shall be regarded as ready.
 
     # app/assets/javascripts/pageflow/panorama/editor/models/package.js
-    pageflow.panorama.Package = pageflow.HostedFile.extend({
+    pageflow.panorama.Package = pageflow.UploadableFile.extend({
       processingStages: [
         {
           name: 'unpacking',
@@ -214,7 +231,7 @@ There is a special SCSS mixin which can be used to associate a
 pictogram with the processing stage:
 
     # app/assets/stylesheets/pageflow/panorama/editor.css.scss
-    @include pageflow-hosted-file-stage('unpacking') {
+    @include pageflow-uploadable-file-stage('unpacking') {
       @include archive-icon;
     }
 
@@ -234,7 +251,7 @@ option to ensure all required image sizes will be generated.
     module Pageflow
       module Panorama
         class Package < ActiveRecord::Base
-          include HostedFile
+          include UploadableFile
 
           has_attached_file(:thumbnail, Pageflow.config.paperclip_s3_default_options
                               .merge(default_url: ':pageflow_placeholder',
@@ -249,3 +266,205 @@ option to ensure all required image sizes will be generated.
 
 Pageflow automatically takes care of passing thumbails urls to the
 editor and displaying them in the appropriate places.
+
+## Using Shared Examples to Test Integration
+
+Pageflow provides a set of shared examples that can be used in a
+plugin's test suite to ensure the file type integrates correctly:
+
+    require 'spec_helper'
+    require 'pageflow/lint'
+
+    module Pageflow
+      module Panorama
+        Pageflow::Lint.file_type(:image_file,
+                                 create_file_type: -> { Panorama.package_file_type },
+                                 create_file: -> { create(:panorama_package) })
+      end
+    end
+
+## Generated Files
+
+Some types of files are not supposed to be uploaded by the user, but
+are instead created on the server, either by downloading resources
+from third party systems or by generating files based on already
+uploaded files.
+
+For example, the `pageflow-chart` plugin supports scraping Datawrapper
+charts based on a URL. To gain more control,
+`Pageflow::Chart::ScrapedSite` includes `Pageflow::ReusableFile`
+instead of `Pageflow::UploadableFile`:
+
+    # app/models/pageflow/chart/scraped_site.rb
+    module Pageflow
+      module Chart
+        class ScrapedSite < ActiveRecord::Base
+          include Pageflow::ReusableFile
+
+          # ... custom attachments
+
+          state_machine initial: 'unprocessed' do
+            extend StateMachineJob::Macro
+
+            state 'unprocessed'
+            state 'processing'
+            state 'processing_failed'
+            state 'processed'
+
+            event :process do
+              transition 'unprocessed' => 'processing'
+            end
+
+            # ...
+          end
+
+          def url
+            read_attribute(:url)
+          end
+
+          def ready?
+            processed?
+          end
+
+          def publish!
+            process!
+          end
+        end
+      end
+    end
+
+The corresponding Backbone model needs to extend `pageflow.ReusableFile`:
+
+    # app/assets/javascripts/pageflow/chart/editor/models/scraped_site.js
+    pageflow.chart.ScrapedSite = pageflow.ReusableFile.extend({
+      stages: [
+        {
+          name: 'processing',
+          activeStates: ['processing'],
+          finishedStates: ['processed'],
+          failedStates: ['processing_failed']
+        }
+      ],
+
+      readyState: 'processed',
+
+      toJSON: function() {
+        return _.pick(this.attributes, 'url');
+      }
+    });
+
+To create files, plugins can use the following JavaScript editor API:
+
+    pageflow.entry.getFileCollection('pageflow_chart_scraped_sites')
+      .findOrCreateBy({url: 'http://some/url'})
+
+Custom attributes which are permitted in create requests need to be
+specified when registering the file type:
+
+    # lib/pageflow/chart/page_type.js
+    module Pageflow
+      module Chart
+        class PageType < Pageflow::PageType
+          name 'chart'
+
+          # ...
+
+          def file_types
+            [Chart.scraped_site_file_type]
+          end
+        end
+
+        def self.scraped_site_file_type
+          FileType.new(model: 'Pageflow::Chart::ScrapedSite',
+                       editor_partial: 'pageflow/chart/editor/scraped_sites/scraped_site',
+                       custom_attributes: {
+                         url: {
+                           permitted_create_param: true
+                         }
+                       })
+        end
+      end
+    end
+
+## Custom Foreign Key Attributes
+
+Custom attributes that reference other file models, need to specify a
+target model class. For example, the `pageflow-linkmap-page` plugin
+defines a `Pageflow::LinkmapPage::ColorMapFile` file type, which
+references the `Pageflow::ImageFile` that the color map was created
+from:
+
+     # lib/pageflow/linkmap_page/page_type.js
+     module Pageflow
+       module LinkmapPage
+         class PageType < Pageflow::PageType
+           name 'linkmap_page'
+
+           def file_types
+             [
+               LinkmapPage.color_map_file_type,
+               # ...
+             ]
+           end
+
+           # ...
+         end
+
+         def self.color_map_file_type
+           FileType.new(model: 'Pageflow::LinkmapPage::ColorMapFile',
+                        # ...
+                        custom_attributes: {
+                          source_image_file_id: {
+                            model: 'Pageflow::ImageFile',
+                            permitted_create_param: true
+                          }
+                        })
+         end
+
+When creating color map files, Pageflow will make sure that the custom
+attribute references an image file from the same revision to prevent
+privilege escalation.
+
+## Import/Export
+
+Pageflow entries can be exported to and imported from zip archives.
+File types based on `Pageflow::UploadableFile` should work correctly
+with the export/import feature by default. The original of the
+uploaded attachment is included in the export and reprocessed on
+import.
+
+For `Pageflow::ReusableFile` some more work is required. The file
+model needs to override `attachments_for_export` to specify which
+originals shall be included in the export. For example,
+`Pageflow::Chart::ScrapedSite` includes all scraped files:
+
+    # app/models/pageflow/chart/scraped_site.rb
+    module Pageflow
+      module Chart
+        class ScrapedSite < ActiveRecord::Base
+          include Pageflow::ReusableFile
+
+          has_attached_file :javascript_file, Chart.config.paperclip_options(extension: 'js')
+          has_attached_file :stylesheet_file, Chart.config.paperclip_options(extension: 'css')
+          has_attached_file :html_file, Chart.config.paperclip_options(extension: 'html')
+          has_attached_file :csv_file, Chart.config.paperclip_options(basename: 'data', extension: 'csv')
+
+          # ...
+
+          def attachments_for_export
+            [javascript_file, stylesheet_file, html_file, csv_file]
+          end
+        end
+      end
+    end
+
+All custom attributes that were specified with the file type will also
+be restored. Foreign key attribute will automatically be rewritten to
+reference the correct newly imported files. You can skip the
+`permitted_create_param` option or set it to `false` to only include
+attributes during export/import, but still do not allow passing them
+in create requests.
+
+See also:
+
+* [Understanding Entry Export and Import](./understanding_entry_export_and_import.md)

@@ -2,20 +2,9 @@ require 'spec_helper'
 
 module Pageflow
   describe CommonEntrySeedHelper do
+    before { helper.extend(RenderJsonHelper) }
+
     describe '#common_entry_seed' do
-      let(:page_type) do
-        Class.new(PageType) do
-          name 'test_page_type'
-
-          attr_reader :file_types, :thumbnail_candidates
-
-          def initialize(options = {})
-            @file_types = options.fetch(:file_types, [])
-            @thumbnail_candidates = options.fetch(:thumbnail_candidates, [])
-          end
-        end
-      end
-
       describe '["page_types"]' do
         it 'includes thumbnail candidates of page types registered for entry' do
           thumbnail_candidates = [
@@ -39,17 +28,17 @@ module Pageflow
           ]
 
           pageflow_configure do |config|
-            config.page_types.register(page_type.new(thumbnail_candidates: thumbnail_candidates))
+            config.page_types.register(TestPageType.new(name: 'test_page_type',
+                                                        thumbnail_candidates: thumbnail_candidates))
           end
 
           revision = create(:revision, :published)
           entry = create(:entry, published_revision: revision)
           published_entry = PublishedEntry.new(entry)
 
-          result = common_entry_seed(published_entry)
-          candidates = result[:page_types][:test_page_type][:thumbnail_candidates]
+          result = helper.render_json { |json| helper.common_entry_seed(json, published_entry) }
 
-          expect(candidates).to eq([
+          candidates = [
             {
               attribute: 'thumbnail_image_id',
               collection_name: 'image_files',
@@ -76,7 +65,13 @@ module Pageflow
                 negated: true
               }
             }
-          ])
+          ]
+          expect(result)
+            .to include_json(page_types: {
+                               test_page_type: {
+                                 thumbnail_candidates: candidates
+                               }
+                             })
         end
       end
 
@@ -86,21 +81,9 @@ module Pageflow
                                             :published,
                                             published_revision_attributes: {locale: 'fr'}))
 
-          result = common_entry_seed(entry)
+          result = helper.render_json { |json| helper.common_entry_seed(json, entry) }
 
-          expect(result[:locale]).to eq('fr')
-        end
-      end
-
-      describe '["slug"]' do
-        it 'equals entry slug' do
-          entry = PublishedEntry.new(create(:entry,
-                                            :published,
-                                            title: 'My Entry'))
-
-          result = common_entry_seed(entry)
-
-          expect(result[:slug]).to eq('my-entry')
+          expect(result).to include_json(locale: 'fr')
         end
       end
 
@@ -113,15 +96,21 @@ module Pageflow
 
           pageflow_configure do |config|
             config.page_types.clear
-            config.page_types.register(page_type.new(file_types: [file_type]))
+            config.page_types.register(TestPageType.new(name: 'test',
+                                                        file_types: [file_type],
+                                                        thumbnail_candidates: []))
           end
 
           entry = PublishedEntry.new(create(:entry, :published))
 
-          result = common_entry_seed(entry)
-          template = result[:file_url_templates]['test_files'][:original]
+          result = helper.render_json { |json| helper.common_entry_seed(json, entry) }
 
-          expect(template).to eq(url_template)
+          expect(result)
+            .to include_json(file_url_templates: {
+                               test_files: {
+                                 original: url_template
+                               }
+                             })
         end
       end
 
@@ -132,14 +121,52 @@ module Pageflow
 
           pageflow_configure do |config|
             config.page_types.clear
-            config.page_types.register(page_type.new(file_types: [file_type]))
+            config.page_types.register(TestPageType.new(name: 'test',
+                                                        file_types: [file_type],
+                                                        thumbnail_candidates: []))
           end
 
           entry = PublishedEntry.new(create(:entry, :published))
 
-          result = common_entry_seed(entry)
+          result = helper.render_json { |json| helper.common_entry_seed(json, entry) }
 
-          expect(result[:file_model_types]['test_files']).to eq('Pageflow::VideoFile')
+          expect(result)
+            .to include_json(file_model_types: {
+                               test_files: 'Pageflow::VideoFile'
+                             })
+        end
+      end
+
+      describe '["theming"]' do
+        it 'contains privacy link url and label' do
+          theming = create(:theming,
+                           privacy_link_url: 'https://example.com/privacy')
+          entry = PublishedEntry.new(create(:entry, :published, theming: theming))
+
+          result = helper.render_json { |json| helper.common_entry_seed(json, entry) }
+
+          expect(result)
+            .to include_json(theming: {
+                               privacy_link_url: 'https://example.com/privacy'
+                             })
+        end
+      end
+
+      describe '["enabled_feature_names"]' do
+        it 'contains list of enabled features' do
+          pageflow_configure do |config|
+            config.features.register('some_feature')
+            config.features.register('other_feature')
+          end
+
+          entry = PublishedEntry.new(create(:entry, :published, with_feature: 'some_feature'))
+
+          result = helper.render_json { |json| helper.common_entry_seed(json, entry) }
+
+          expect(result)
+            .to include_json(enabled_feature_names: including('some_feature'))
+          expect(result)
+            .not_to include_json(enabled_feature_names: including('other_feature'))
         end
       end
     end

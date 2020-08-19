@@ -1,0 +1,27 @@
+.chapterLink {
+  line-height: 3rem;
+  color: rgb(0, 55, 90);
+  text-decoration: none;
+  position: relative;
+  display: block;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  height: 50px;
+}
+
+.chapterLink:hover,
+.chapterLinkActive {
+  color: #e10028;
+}
+
+.summary {
+  display: none;
+}
+
+/* mobile view */
+@media (max-width: 780px) {
+  .summary {
+    display: block;
+  }
+}

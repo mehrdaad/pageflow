@@ -24,21 +24,47 @@ module Pageflow
     # @return {Boolean}
     attr_reader :top_level_type
 
+    # Callable that receives a file record and returns a hash of one
+    # of the following forms:
+    #
+    #     {
+    #       poster: "url/of/image"
+    #     }
+    #
+    # where `poster` is an arbitrary css class infix. Use `default` to
+    # skip the infix in the generated css class name. Or
+    #
+    #     {
+    #       poster: {
+    #         desktop: "desktop/url/of/image",
+    #         mobile: "mobile/url/of/image"
+    #       }
+    #     }
+    #
+    # to provide different urls for the two media breakpoints.
+    #
+    # @return [#call]
+    attr_reader :css_background_image_urls
+
     # Callable that returns a hash of url template strings indexed by
     # their names.
     # @return [#call]
     attr_reader :url_templates
 
+    # @api private
+    attr_reader :custom_attributes
+
     # Create file type to be returned in {PageType#file_types}.
     #
     # @example
     #
-    #   Pageflow::FileType.new(model: Pageflow::Rainbow::File,
+    #   Pageflow::FileType.new(model: 'Pageflow::Rainbow::File',
     #                          editor_partial: 'pageflow/rainbow/editor/files/file')
     #
     # @param [Hash] options
     # @option options [ActiveRecord::Base, String] :model
-    #   Required. Model representing the file, or name of that model.
+    #   Required. Name of model representing the file. Model reference
+    #   still works, but is deprecated
     # @option options [String] :partial
     #   Optional. Path of a partial to include in json representations
     #   of the file both inside  the editor and published entries.
@@ -50,9 +76,14 @@ module Pageflow
     #   model `Pageflow::Rainbow::File`.
     # @option options [Array<FileType>] :nested_file_types
     #   Optional. Array of FileTypes allowed for nested files. Defaults to [].
+    # @option options [#call] :css_background_image_urls
+    #   Optional. See {#css_background_image_urls}
     # @option options [#call] :url_templates
     #   Optional. Callable returning a hash of url template strings
     #   indexed by their names.
+    # @option options [Array<Symbol>] :custom_attributes
+    #   Optional. Array of strings containing attribute names that are
+    #   custom to this file type
     def initialize(options)
       @model_string_or_reference = options.fetch(:model)
       @partial = options[:partial]
@@ -60,7 +91,10 @@ module Pageflow
       @collection_name_or_blank = options[:collection_name]
       @nested_file_types = options.fetch(:nested_file_types, [])
       @top_level_type = options.fetch(:top_level_type, false)
-      @url_templates = options.fetch(:url_templates, ->() { {} })
+      @css_background_image_urls = options[:css_background_image_urls]
+      @css_background_image_class_prefix = options[:css_background_image_class_prefix]
+      @url_templates = options.fetch(:url_templates, -> { {} })
+      @custom_attributes = convert_custom_attributes_option(options[:custom_attributes])
     end
 
     # ActiveRecord model that represents the files of this type.
@@ -85,6 +119,11 @@ module Pageflow
     end
 
     # @api private
+    def css_background_image_class_prefix
+      @css_background_image_class_prefix || model.model_name.singular
+    end
+
+    # @api private
     def param_key
       model.model_name.param_key.to_sym
     end
@@ -100,6 +139,20 @@ module Pageflow
     # @api private
     def i18n_key
       model.model_name.i18n_key
+    end
+
+    private
+
+    def convert_custom_attributes_option(custom_attributes)
+      if custom_attributes.is_a?(Array)
+        custom_attributes.each_with_object({}) do |attribute_name, result|
+          result[attribute_name] = {permitted_create_param: true}
+        end
+      elsif custom_attributes.is_a?(Hash)
+        custom_attributes
+      else
+        {}
+      end
     end
   end
 end

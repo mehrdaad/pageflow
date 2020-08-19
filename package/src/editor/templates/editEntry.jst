@@ -1,0 +1,16 @@
+<a class="close" href="#"><%= I18n.t('pageflow.editor.templates.edit_entry.close') %></a>
+<a class="publish" href="#" data-tooltip-align="bottom right">
+  <%= I18n.t('pageflow.editor.templates.edit_entry.publish') %>
+</a>
+
+<ul class="menu">
+  <li>
+    <a class="edit_entry_meta_data" href="#" data-path="/meta_data"><%= I18n.t('pageflow.editor.templates.edit_entry.metadata') %></a>
+    <span class="failure_icon" title="<%= I18n.t('pageflow.editor.templates.edit_entry.save_error') %>" />
+  </li>
+  <li>
+    <a class="manage_files" href="#" data-path="/files"><%= I18n.t('pageflow.editor.templates.edit_entry.manage_files') %></a>
+  </li>
+</ul>
+
+<div class="edit_entry_outline_region"></div>

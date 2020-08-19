@@ -1,10 +1,10 @@
 module Pageflow
   class VideoFile < ApplicationRecord
-    include HostedFile
-    include EncodedFileStateMachine
+    include UploadableFile
+    include MediaEncodingStateMachine
     include OutputSource
 
-    belongs_to :confirmed_by, :class_name => 'User'
+    belongs_to :confirmed_by, class_name: 'User', optional: true
 
     has_attached_file(:poster, Pageflow.config.paperclip_s3_default_options
                         .merge(default_url: ':pageflow_placeholder',
@@ -40,7 +40,7 @@ module Pageflow
     end
 
     def attachment_s3_url
-      "s3://#{File.join(attachment_on_s3.bucket_name, attachment_on_s3.path)}"
+      "s3://#{File.join(attachment.bucket_name, attachment.path)}"
     end
 
     def encode_highdef?

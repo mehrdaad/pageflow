@@ -7,6 +7,7 @@
 @import "./blank_entry";
 @import "./dialogs";
 @import "./colors";
+@import "./entry_preview";
 @import "./background_positioning";
 @import "./page_selection";
 @import "./files_explorer";
@@ -15,6 +16,7 @@
 @import "./indicators";
 @import "./disabled_atmo_indicator";
 @import "./unsupported_browser_hint";
+@import "./file_import";
 
 .editor {
   @import "./change_theme";
@@ -51,6 +53,7 @@
     text-decoration: none;
   }
 
+  @import "./composables";
   @import "./list";
   @import "./drop_down_button";
 
@@ -68,6 +71,7 @@
   @import "./file_stages";
   @import "./file_thumbnails";
   @import "./file_settings_dialog";
+  @import "./info_box";
   @import "./text_tracks";
   @import "./static_thumbnails";
   @import "./wysihtml5";
@@ -81,6 +85,9 @@
   @import "./page_links";
   @import "./storyline_picker";
   @import "./loading";
+  @import "./sidebar_footer";
+  @import "./emulation_mode_button";
+  @import "./help_image";
 
   a.publish {
     @include eye-icon;

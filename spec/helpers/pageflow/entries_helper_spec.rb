@@ -68,6 +68,34 @@ module Pageflow
       end
     end
 
+    describe '#entry_privacy_link_url' do
+      it 'uses configured url and locale' do
+        theming = create(:theming,
+                         privacy_link_url: 'https://example.com/privacy')
+        entry = PublishedEntry.new(create(:entry,
+                                          :published,
+                                          theming: theming,
+                                          published_revision_attributes: {
+                                            locale: 'de'
+                                          }))
+
+        result = helper.entry_privacy_link_url(entry)
+
+        expect(result).to eq('https://example.com/privacy?lang=de')
+      end
+
+      it 'returns nil if no url is configured' do
+        entry = PublishedEntry.new(create(:entry,
+                                          :published,
+                                          published_revision_attributes: {
+                                            locale: 'de'
+                                          }))
+        result = helper.entry_privacy_link_url(entry)
+
+        expect(result).to be_nil
+      end
+    end
+
     describe '#entry_file_rights' do
       it 'returns comma separated list of file rights' do
         revision = create(:revision)
@@ -114,13 +142,41 @@ module Pageflow
     end
 
     describe '#entry_stylesheet_link_tag' do
+      it 'renders stylesheet link tag' do
+        revision = build_stubbed(:revision)
+        entry = PublishedEntry.new(build_stubbed(:entry), revision)
+
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to have_selector('link[rel=stylesheet][media=all]', visible: false)
+      end
+
+      it 'sets data-name attribute' do
+        revision = build_stubbed(:revision)
+        entry = PublishedEntry.new(build_stubbed(:entry), revision)
+
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to have_selector('link[data-name=entry]', visible: false)
+      end
+
+      it 'does not use asset_host' do
+        revision = build_stubbed(:revision)
+        entry = PublishedEntry.new(build_stubbed(:entry), revision)
+
+        controller.config.asset_host = 'some-asset-host'
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).not_to include('some-asset-host')
+      end
+
       it 'returns revision css for published entry with custom revision' do
         revision = build_stubbed(:revision)
         entry = PublishedEntry.new(build_stubbed(:entry), revision)
 
         result = helper.entry_stylesheet_link_tag(entry)
 
-        expect(result).to include(%Q'href="/revisions/#{revision.id}.css')
+        expect(result).to include(%(href="/revisions/#{revision.id}/stylesheet.css))
       end
 
       it 'returns entry css for published entry without custom revision' do
@@ -129,7 +185,7 @@ module Pageflow
 
         result = helper.entry_stylesheet_link_tag(entry)
 
-        expect(result).to include(%Q'href="/entries/#{entry.entry.id}.css')
+        expect(result).to include(%(href="/entries/#{entry.entry.id}/stylesheet.css))
       end
 
       it 'appends revision cache key for published entry without custom revision' do
@@ -166,6 +222,56 @@ module Pageflow
         result = helper.entry_stylesheet_link_tag(entry)
 
         expect(result).to include("p=#{Pageflow::VERSION}")
+      end
+    end
+
+    describe '#entry_global_links' do
+      it 'does not output links by default' do
+        theming = create(:theming)
+        entry = PublishedEntry.new(create(:entry, theming: theming))
+
+        result = helper.entry_global_links(entry)
+
+        expect(result).not_to have_selector('a')
+      end
+
+      it 'includes imprint link if configured' do
+        theming = create(:theming,
+                         imprint_link_label: 'Imprint',
+                         imprint_link_url: 'https://example.com/legal')
+        entry = PublishedEntry.new(create(:entry, theming: theming))
+
+        result = helper.entry_global_links(entry)
+
+        expect(result).to have_selector('a[href="https://example.com/legal"]',
+                                        text: 'Imprint')
+      end
+
+      it 'includes copyright link if configured' do
+        theming = create(:theming,
+                         copyright_link_label: 'Copyright',
+                         copyright_link_url: 'https://example.com/copyright')
+        entry = PublishedEntry.new(create(:entry, theming: theming))
+
+        result = helper.entry_global_links(entry)
+
+        expect(result).to have_selector('a[href="https://example.com/copyright"]',
+                                        text: 'Copyright')
+      end
+
+      it 'includes privacy link if configured' do
+        theming = create(:theming,
+                         privacy_link_url: 'https://example.com/privacy')
+        entry = PublishedEntry.new(create(:entry,
+                                          :published,
+                                          theming: theming,
+                                          published_revision_attributes: {
+                                            locale: 'de'
+                                          }))
+
+        result = helper.entry_global_links(entry)
+
+        expect(result).to have_selector('a[href="https://example.com/privacy?lang=de"]')
       end
     end
   end

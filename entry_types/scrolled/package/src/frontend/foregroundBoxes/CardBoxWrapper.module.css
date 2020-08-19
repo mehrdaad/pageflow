@@ -1,0 +1,53 @@
+@value darkBackground, lightBackground from "../colors.module.css";
+
+.card {
+  position: relative;
+  padding: 0 1.5em;
+  margin-top: -1px;
+  padding-top: 1px;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.cardStart {
+  margin-top: 3em;
+}
+
+.cardEnd {
+  margin-bottom: 3em;
+  padding-bottom: 1.5em;
+}
+
+.cardStart::before {
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.cardEnd::before {
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.cardBgWhite::before {
+  background-color: lightBackground;
+}
+
+.cardBgBlack::before {
+  background-color: darkBackground;
+}
+
+.cardBgWhite {
+  color: black;
+}
+
+.cardBgBlack {
+  color: white;
+}

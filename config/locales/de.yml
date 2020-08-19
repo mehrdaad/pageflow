@@ -93,9 +93,13 @@ de:
         contains: Enthält
         ends_with: Endet mit
         equals: Ist gleich
+        from: Von
         greater_than: Größer als
+        gteq_datetime: Größer gleich
         less_than: Kleiner als
+        lteq_datetime: Kleiner gleich
         starts_with: Beginnt mit
+        to: Bis
     greater_than: Größer als
     has_many_delete: Löschen
     has_many_new: "%{model} hinzufügen"
@@ -108,6 +112,7 @@ de:
     less_than: Kleiner als
     logout: Abmelden
     main_content: Bitte implementieren Sie %{model}#main_content, um Inhalte anzuzeigen.
+    new: Neu erstellen
     new_model: "%{model} erstellen"
     next: Weiter
     pagination:
@@ -177,28 +182,35 @@ de:
         credits: Credits
         edited_at: Geändert am
         embed_code: Einbetten
-        emphasize_chapter_beginning: Kapitelanfang hervorheben
-        emphasize_new_pages: Neue Seiten hervorheben
         first_published_at: Erstmals veröffentlicht am
-        home_button_enabled: Home-Button anzeigen
-        home_url: Home-Button URL
         keywords: Schlüsselwörter
         locale: Sprache
-        manual_start: Multimedia Hinweis vor dem Start anzeigen
-        overview_button_enabled: Übersicht-Button anzeigen
         own_role: Rolle
         published?: Veröffentlichungstatus
         published_at: Veröffentlicht seit
         published_revision_published_at: Veröffentlicht am
         publisher: Herausgeber
         share_image_id: Social Sharing Bild
+        share_providers: Social Share Links
         share_url: Social Sharing URL
         summary: Zusammenfassung
         theme_name: Theme
         title: Titel
+        type_name: Beitrags-Typ
         updated_at: Geändert am
         url: Permalink
         with_publication_state: Veröffentlichungsstatus
+      pageflow/entry_template:
+        configuration:
+          group_label: Konfiguration
+          home_button_enabled: Home-Button in neuen Beiträgen anzeigen
+        default_author: Standard-Autor
+        default_keywords: Standard-Schlüsselwörter
+        default_locale: Standard-Sprache
+        default_publisher: Standard-Herausgeber
+        default_share_providers: Standard-Share-Links
+        entry_type: Beitrags-Typ
+        theme_name: Theme
       pageflow/folder:
         account: Konto
         name: Name
@@ -227,6 +239,7 @@ de:
         display_in_navigation: In Navigationsleiste anzeigen
         emphasize_in_navigation: In Navigationsleiste hervorheben
         gradient_opacity: Intensität der Abblendung
+        hide_logo: Logo ausblenden
         hide_title: Titel ausblenden
         invert: Farben invertieren
         linked_page_ids: Seiten verknüpfen
@@ -261,18 +274,19 @@ de:
         cname: CNAME
         copyright_link_label: Copyright-Link Text
         copyright_link_url: Copyright-Link URL
-        default_author: Standard Autor
-        default_keywords: Standard Schlüsselwörter
-        default_publisher: Standard Herausgeber
-        home_button_enabled_by_default: Home-Button in neuen Beiträgen anzeigen
         home_url: Redirect URL
         imprint_link_label: Impressum-Link Text
         imprint_link_url: Impressum-Link URL
-        theme_name: Theme
+        privacy_link_url: Datenschutz-Link URL
+        share_providers: Standard Share Links
       pageflow/video_file:
         dimensions: Maße
         duration: Länge
         format: Format
+      pageflow/widget:
+        blur_strength: Unschärfe
+        invert: Farben invertieren
+        remove_logo: Logo entfernen
       user:
         account: Konto
         admin: System-Administrator
@@ -342,6 +356,16 @@ de:
           attributes:
             folder:
               must_be_same_account: Ordner muss zu gleichem Konto gehören wie Beitrag
+            type_name:
+              must_be_available_for_account: "'%{type_name}' ist für dieses Konto nicht verfügbar"
+        pageflow/entry_template:
+          attributes:
+            entry_type:
+              taken: bereits konfiguriert. Es existiert bereits eine Beitragsvorlage für den Beitrags-Typ in diesem Konto. Kehre zum Beitragsvorlagen-Tab zurück und bearbeite die existierende Beitragsvorlage anstatt eine neue anzulegen.
+        pageflow/membership:
+          attributes:
+            user:
+              required: Benutzer muss ausgewählt sein
     models:
       account:
         one: Konto
@@ -367,6 +391,9 @@ de:
       pageflow/entry:
         one: Beitrag
         other: Beiträge
+      pageflow/entry_template:
+        one: Beitragsvorlage
+        other: Beitragsvorlagen
       pageflow/folder:
         one: Ordner
         other: Ordner
@@ -411,6 +438,16 @@ de:
           not_published: Nicht veröffentlicht
           published_with_password_protection: Mit Passwortschutz veröffentlicht
           published_without_password_protection: Ohne Passwortschutz veröffentlicht
+        share_providers:
+          email: Email
+          facebook: Facebook
+          linked_in: LinkedIn
+          telegram: Telegram (nur Mobilgeräte)
+          twitter: Twitter
+          whats_app: WhatsApp (nur Mobilgeräte)
+        type_names:
+          paged: Seitenbasiert / klassisch
+          scrolled: Kontinuierlich scrollend / Pageflow Next
       pageflow/membership:
         role:
           editor: Redakteur
@@ -446,6 +483,7 @@ de:
           internal_links: Seiten-Verweise
           video: Video
         text_position:
+          center: Mittig
           left: Links
           right: Rechts
         transition:
@@ -751,12 +789,13 @@ de:
     admin:
       account:
         add: Konto hinzufügen
+        cannot_add: Was Sie tun möchten, ist nicht möglich.
         none_addable_tooltip: Kein Konto verfügbar
       accounts:
+        entry_template_hint: Einige Formularfelder sind ab sofort im Beitragsvorlagen-Tab auf der Informations-Seite dieses Kontos zu finden.
         no_entries: Keine Beiträge
         no_members: Keine Benutzer
         theming_defaults_inline_help: Die folgenden Einstellungen werden als Standard für neue Beiträge des Kontos verwendet. Änderungen wirken sich nicht auf existierende Beiträge aus.
-        widgets_inline_help: DELETED
       entries:
         add_folder: Ordner hinzufügen
         confirm_depublish: Soll der Beitrag wirklich depubliziert werden?
@@ -775,6 +814,7 @@ de:
         members: Mitglieder
         no_members: Es sind keine Redakteure zugeordnet.
         no_revisions: Bisher keine Revisionen
+        not_allowed_to_see_entry_types: Sie sind nicht berechtigt, die verfügbaren Beitrags-Typen für dieses Konto abzurufen
         not_published: Nicht veröffentlicht
         password_protected: Mit Passwortschutz
         preview: Vorschau
@@ -802,7 +842,13 @@ de:
         title_hint: Dieses Feld bestimmt die URL, unter der der Beitrag öffentlich erreichbar ist.
       entry:
         add: Beitrag hinzufügen
+        entry_membership_hint: Laden Sie Benutzer in Ihr Konto ein, um sie als Mitglieder dieser Story zuzuweisen.
         none_addable_tooltip: Kein Beitrag verfügbar
+        user_quota_exhausted: Ihr Benutzerkontingent ist erschöpft.
+      entry_templates:
+        page_title:
+          edit: Beitragsvorlage bearbeiten für Beitrags-Typ
+          new: Beitragsvorlage erstellen für Beitrags-Typ
       features:
         states:
           default: Standard (%{inherited})
@@ -825,23 +871,27 @@ de:
         account_editor_hint: Auf Kontoebene zugeordnete Benutzer sind hier nicht aufgeführt
         accounts: Konten
         entries: Beiträge
+        entry_templates: Beitragsvorlagen
         features: Features
         members: Mitglieder
         revisions: Revisionen
         users: Benutzer
       revisions:
         published_until_hint: Freilassen, um Beitrag unbegrenzt zu veröffentlichen.
+        restored: Revision wiederhergestellt
       themings:
         additional_cnames_hint: Kommaseparierte Liste von weiteren CNAMES. Ausschließlich zur Auswahl der Redirect URL genutzt.
         cname_hint: Wird in Share Links verwendet.
         default_author_hint: Voreinstellung 'author' Meta-Feld für Eintrage
         default_keywords_hint: Voreinstellung 'keywords' Meta-Feld für Eintrage
+        default_locale_hint: Voreinstellung Sprache für Einträge
         default_publisher_hint: Voreinstellung 'publisher' Meta-Feld für Eintrage
         home_url_hint: Wird einer der obigen CNAMES ohne Pfad in der URL verwendet, wird zu dieser URL umgeleitet. Standard Link Ziel des Home Buttons.
         name: "%{account_name}"
         remove_logo: Logo entfernen
         show: Anzeigen
       user:
+        cannot_add: Was Sie tun möchten, ist nicht möglich. Sie müssen aktualisieren.
         none_addable_tooltip: Kein Benutzer verfügbar
       users:
         account: Profil
@@ -876,6 +926,7 @@ de:
         no_accounts: Keine Konten
         no_entries: Keine Beiträge
         none: Sie haben keine Beiträge.
+        not_allowed_to_see_user_quota: Sie sind nicht berechtigt, die Nutzer-Quota für dieses Konto abzurufen.
         resend_invitation: Einladung erneut verschicken
         resent_invitation: Der Benutzer wurde erneut per E-Mail eingeladen.
         roles:
@@ -920,8 +971,18 @@ de:
       help_entries:
         page_type:
           menu_item: Audio
-          text: "# Audio\n\n*Wiedergabe von Audiodatei mit Steuerelementen* \n    \nHiermit kannst Du Audiodateien mit Hintergrund-Bild oder Hintergrund-Video und Textinhalten\nkombinieren. Wie beim Seitentyp „Video“ werden\nSteuerelemente angezeigt, und ebenso kann eine zusätzliche\nInfobox mit Text befüllt werden.\n\nTypische Anwendungsbeispiele: Interview, O-Töne,\nMusikstücke"
+          text: "# Audio\n\n*Wiedergabe von Audiodatei mit Steuerelementen* \n    \nHiermit kannst Du Audiodateien mit Hintergrund-Bild oder Hintergrund-Video und Textinhalten\nkombinieren. Wie beim Seitentyp „Video“ werden\nSteuerelemente angezeigt, und ebenso kann eine zusätzliche\nInfobox mit Text befüllt werden.\n\nUnter „Optionen“ kann das Erscheinungsbild des Players auf die Visualisierung der Waveform eines Audio-Files gewechselt werden.\n\nTypische Anwendungsbeispiele: Interview, O-Töne,\nMusikstücke"
       open: Audio anhören
+      page_attributes:
+        audio_player_controls_variant:
+          inline_help: Die Audio-Seite unterstützt alternative Darstellunsvarianten der Player-Controls.
+          label: Player Controls Variante
+          values:
+            default: Standard
+            waveform: Waveform
+        waveform_color:
+          inline_help: Farbe des Bereichs der Waveform, der den bereits abgespielten Teil der Audio-Datei repräsentiert.
+          label: Waveform Farbe
       page_type_category_name: Media
       page_type_description: Wiedergabe von Audiodatei mit Steuerelementen
       page_type_name: Audio
@@ -931,32 +992,14 @@ de:
       help_entries:
         page_type:
           menu_item: Hintergrund-Bild/-Video
-          text: |-
-            # Hintergrund-Bild/-Video
-
-            Bildschirmfüllendes Bild und Text
-
-            Mit dem Seitentyp „Hintergrund-Bild/-Video“ werden großformatige
-            Bilder oder Videos mit Text überlagert und zur optimalen Lesbarkeit
-            mit einem manuell einstellbaren Farbverlauf gepaart. über
-            die Auswahl des Bildausschnitts stellst Du sicher, dass
-            Dein Bild auch auf mobilen Endgeräten optimal dargestellt
-            wird. Wahlweise kann der Text für einen ausreichenden
-            Kontrast auch invertiert - also von hell in dunkel -
-            vertauscht werden. Das bietet sich bei hellen
-            Hintergrund-Bildern an.
-
-            User haben übrigens die Möglichkeit Farbverlauf und Text
-            im Front-End auszublenden, sofern Sie sich speziell für
-            das Hintergrund-Bild oder - Video interessieren.
-
-            Typische Anwendungsbeispiele: Präsentation, Teil einer
-            Bildergalerie, Portrait
+          text: "# Hintergrund-Bild/-Video\n\n*Bildschirmfüllendes Bild und Text*\n\nMit dem Seitentyp „Hintergrund-Bild/-Video“ werden großformatige Bilder oder Videos mit Text überlagert und zur optimalen Lesbarkeit mit einem manuell einstellbaren Farbverlauf gepaart. Über die Auswahl des Bildausschnitts stellst Du sicher, dass Dein Bild auch auf mobilen Endgeräten im Portrait-Modus den relevanten Ausschnitt deines Motivs zeigt. \n\nWahlweise kann der Text für einen ausreichenden\nKontrast auch invertiert - also von hell in dunkel -\nvertauscht werden. Das bietet sich bei hellen\nHintergrund-Bildern an.\n\nUser haben übrigens die Möglichkeit Farbverlauf und Text\nim Front-End auszublenden, sofern Sie sich speziell für\ndas Hintergrund-Bild oder - Video interessieren.\n\nTypische Anwendungsbeispiele: Präsentation, Teil einer\nBildergalerie, Portrait\n\n**Hinweis zum Ton bei Hintergrund-Videos:** Aufgrund technischer Einschränkungen, basierend auf der „Autoplay Policy“ der Browser-Hersteller, können Videos mit Ton nicht auf allen Geräten/Browsern automatisch abgespielt werden. \n\nUm die Wiedergabe von Videoloops auf mobilen Geräten und bei Safari auf Desktop und Tablets zu ermöglichen wird der Ton daher unterdrückt. Bei Chrome wird diese Einschränkung durch einen Unmute-Button umgangen, bei Firefox entscheiden Nutzer selbst, ob die automatische Wiedergabe von Audios zugelassen wird."
       page_type_category_name: Basic
       page_type_description: Bildschirmfüllendes Bild oder Video-Loop mit Text
       page_type_name: Hintergrund Bild/Video
     chapter_hierachy:
       feature_name: Kapitel Hierachie
+    classic_loading_spinner:
+      widget_type_name: Klassisch
     common_page_attributes:
       background_type:
         inline_help: Im Hintergund der Seite kann entweder ein Bild oder ein Video-Loop angezeigt werden.
@@ -983,6 +1026,8 @@ de:
         captions: Ton-Ersatz-Textspur
         descriptions: Bild-Ersatz-Textspur
         subtitles: Übersetzungs-Textspur
+    cookie_notice_bar:
+      widget_type_name: Leiste am unteren Seitenrand
     default_theme:
       name: Standard
     delayed_text_fade_in:
@@ -1017,6 +1062,10 @@ de:
         header: Dies ist ein leerer Pageflow
         intro: Pageflows bestehen aus Kapiteln und Seiten. In der Seitenleiste rechts findest Du die Gliederung.
         outro: Hier siehst Du dann eine Vorschau deines Pageflows.
+      classic_loading_spinner:
+        widget_type_info_box_text: Dies ist eine Vorschau der klassischen Lade-Ansicht. Wird angezeigt, während der Beitrag lädt.
+      cookie_notice_bar:
+        widget_type_info_box_text: Der Hinweis wird beim ersten Öffnen von Beiträgen, die Cookies verwenden, am unteren Seitenrand angezeigt. Cookies werden gesetzt, falls ein Dienst zur Erhebnung von Nutzungsdaten (z.B. Google Analytics) verwendet wird oder wenn die Funktion 'Neue Seiten hervorheben' aktiv ist.
       entries:
         unsupported_browser_hint:
           message: Die Version Ihres Browsers wird vom Pageflow Editor nicht unterstützt. Bitte benutzen Sie einen aktuellen Browser.
@@ -1084,6 +1133,8 @@ de:
           audio_files: Audios
           image_files: Bilder
           video_files: Videos
+      media_loading_spinner:
+        widget_type_info_box_text: Dies ist eine Vorschau der Lade-Ansicht von 'Bild'. Die Animation wird ausgeführt, während die Seite geladen wird.
       nested_files:
         text_track_files:
           delete:
@@ -1111,6 +1162,9 @@ de:
             column_header: Sprache
             inline_help_html: "<ul><li>Die Sprache einer Textspur wird als Zwei-Buchstaben-Code nach ISO 639.1 angegeben.</li> <li><strong>Beispiele:</strong> 'de' für Deutsch oder 'en' für Englisch.</li> <li>Den Sprachcode findet man meist auf der Wikipedia-Seite zur jeweiligen Sprache.</li></ul>"
             label: Sprache
+      phone_horizontal_slideshow_mode:
+        page_transitions_inline_help: "<br /><br />Unter 'Titel und Optionen > Erscheinungsbild' sind horizontale Steuerungsgesten für Smartphones aktiviert. Vertikale Seitenübergänge (z.B. von unten nach oben) ändern sich im Phone-Layout automatisch in horizontale Übergangseffekte (z.B. von rechts nach links) und umgekehrt."
+        widget_type_info_box_text: "<p>Auf Smartphones mit horizontalen Wisch-Gesten zwischen Seiten wechseln.</p><p>Vertikale Seitenübergänge (z.B. von unten nach oben) ändern sich in horizontale Übergangseffekte (z.B. von rechts nach links) und umgekehrt.</p><p>Im Desktop-Layout und auf Tablets hat die Einstellung keine Auswirkung.</p>"
       quotas:
         loading: Quotas überprüfen...
       templates:
@@ -1185,6 +1239,13 @@ de:
         embedded:
           page_link:
             reset: Zurücksetzen
+        emulation_mode_button:
+          desktop: Desktop
+          disabled_hint: Von diesem Seitentyp nicht unterstützt
+          header: 'Vorschau Modus:'
+          phone: Phone
+        entry_preview:
+          navigation_disabled_hint: Seitenwechsel sind innerhalb der Phone Vorschau nicht möglich.
         file_item:
           cancel: Abbrechen
           confirm: Überprüfen und bestätigen
@@ -1216,10 +1277,6 @@ de:
           title: Hilfe
         help_button:
           open_help: Hilfe anzeigen
-        inputs:
-          reference:
-            edit: DELETED
-            reset: DELETED
         list_blank_slate:
           text: "(Keine Einträge)"
         list_item:
@@ -1294,6 +1351,8 @@ de:
         srclang_missing: "(Fehlt)"
       themes:
         header: Themes
+      title_loading_spinner:
+        widget_type_info_box_text: Dies ist eine Vorschau der 'Titel und Bild'-Lade-Ansicht. Die Animation läuft ab, während der Beitrag lädt.
       views:
         chapter_item_view:
           chapter: Kapitel
@@ -1303,16 +1362,19 @@ de:
             Kapitel einschließlich ALLER enthaltener Seiten wirklich löschen?
 
             Dieser Schritt kann nicht rückgängig gemacht werden.
+        edit_configuration:
+          back: Gliederung
+          confirm_destroy: Wirklich löschen?
+          destroy: Löschen
+          retry: Erneut versuchen
+          save_error: Fehler beim Speichern
         edit_entry_view:
           cannot_publish: Sie sind nicht berechtigt diesen Beitrag zu veröffentlichen.
-        edit_page_link_view:
-          default_page_transition: "(Standard)"
         edit_page_view:
           confirm_destroy: Seite wirklich löschen?
         edit_storyline_view:
           cannot_destroy: Nur leere Erzählstränge können gelöscht werden.
           confirm_destroy: Erzählstrang wirklich löschen?
-          default_parent_page_transition: "(Standard)"
         editor_views:
           files_pending_warning: Es werden noch Dateien hochgeladen. Wenn Sie die Seite verlassen werden die Uploads abgebrochen.
           hide_editor: Editorleiste ausblenden
@@ -1324,6 +1386,10 @@ de:
           blank: "-"
         files_view:
           add: Hinzufügen
+          authenticating: Authentifizieren
+          import: Importieren
+          importer:
+            heading: Dateien importieren von
           reuse: Wiederverwenden
           upload: Hochladen
         filtered_files_view:
@@ -1349,25 +1415,69 @@ de:
         storylines_picker_view:
           label: Erzählstrang
           without_parent_page: Ohne übergeordnete Seite
+      widgets:
+        attributes:
+          media_loading_spinner:
+            animation_duration:
+              inline_help: Steuert die Animationsdauer beim Laden des Spinners
+              label: Animationsdauer
+            blur_strength:
+              inline_help: Steuern Sie die Unschärfe des Hintergrundbilds.
+              label: Unschärfe
+            custom_background_image_id:
+              inline_help: Standardmäßig wird das Hintergrundbild der ersten Seite verwendet.
+              label: Hintegrundbild
+            remove_logo:
+              label: Logo entfernen
+          title_loading_spinner:
+            animation_duration:
+              inline_help: Steuert die Animationsdauer beim Laden des Spinners
+              label: Animationsdauer
+            blur_strength:
+              inline_help: Steuern Sie die Unschärfe des Hintergrundbilds.
+              label: Unschärfe
+            custom_background_image_id:
+              inline_help: Standardmäßig wird das Hintergrundbild der ersten Seite verwendet.
+              label: Hintegrundbild
+            subtitle:
+              inline_help: Untertitel, der in der Lade-Ansicht gezeigt werden soll.
+              label: Untertitel
+            title:
+              inline_help: Titel, der in der Lade-Ansicht gezeigt werden soll. Standardmäßig wird der Beitragstitel verwendet.
+              label: Titel
+    editor_emulation_mode:
+      feature_name: Editor Phone Emulationsmodus
     entry:
       duplicated_title: Kopie von %{title}
+    entry_types:
+      paged:
+        editor:
+          entry_metadata_configuration_attributes:
+            emphasize_chapter_beginning:
+              inline_help: Mit dieser Option wird der Titel der jeweils ersten Seite eines Kapitels größer dargestellt.
+              label: Kapitelanfang hervorheben
+            emphasize_new_pages:
+              inline_help: Zeigt zum Start des Pageflows in einer Info-Box die seit dem letzten Besuch neu erstellten Seiten an.
+              label: Neue Seiten hervorheben
+            home_button_enabled:
+              inline_help: Es gibt die Möglichkeit, in der Navigation einen Button anzuzeigen, der auf eine externe Seite verlinkt, z.B. zurück auf die Homepage, von der aus Du den Pageflow verlinkt hast.
+              label: Home-Button anzeigen
+            home_button_enabled_disabled:
+              inline_help: Diese Funktion steht in diesem Theme nicht zur Verfügung.
+            home_url:
+              inline_help: URL der Übersichtseite. Leer lassen, um Standard zu übernehmen.
+              label: Home-Button-URL
+            home_url_disabled:
+              inline_help: Diese Funktion steht in diesem Theme nicht zur Verfügung.
+            manual_start:
+              inline_help: Entscheide, ob zu Beginn Deines Pageflows ein Hinweis angezeigt wird.
+              label: Multimedia-Hinweis vor dem Start anzeigen
+            overview_button_enabled:
+              inline_help: In der Übersicht werden die Kapitel und Seiten des Haupterzählstrangs angezeigt.
+              label: Übersicht-Button anzeigen
+            overview_button_enabled_disabled:
+              inline_help: Diese Funktion steht in diesem Theme nicht zur Verfügung.
     help_entries:
-      atmo:
-        menu_item: Atmo Audio
-        text: |-
-          # Atmo Audio
-
-          Mit der „Atmo“ kann jede Seite, unabhängig vom Seitentyp, im Hintergrund Sound abspielen. Dabei kannst Du bestimmen, ob ein Sound nur auf einer Seite zu hören ist oder über mehrere Seiten ohne Unterbrechung läuft. Wähle dazu einfach für die benachbarten Seiten die selbe Audiodatei als Atmo aus.
-
-          Auf diese Weise lassen sich Kapitel akustisch voneinander absetzen und zusammenhängende Seiten stärker verweben.
-
-          Beim Seitentyp Video kann zusätzlich ausgwählt werden, ob der Hintergrundsound während der Video-Wiedergabe normal oder leiser weitergespielt oder ganz ausgeblendet werden soll.
-
-          Die Einstellung der Atmo-Sounds erreichst du bei jeder Seite über den Reiter „Optionen“.
-
-          Sollte Dich die Atmo während der Bearbeitung Deines Beitrags im Editor einmal stören, kannst Du sie mit der Tastenkombination „Alt + a“ vorübergehend stumm schalten. Um die Atmo wieder zu aktivieren, drücke einfach erneut „Alt + a“.
-
-          ACHTUNG: Atmo-Audios werden auf mobilen Geräten nicht wiedergegeben.
       files:
         menu_item: Dateien verwalten
         text: |-
@@ -1413,13 +1523,6 @@ de:
           die Verarbeitung noch nicht abgeschlossen ist. Während des
           Ladevorgangs kann also problemlos weiter gearbeitet werden.
 
-          ## Datei-Einstellungen bearbeiten
-
-          Für jede Datei kann über die Schaltfläche "Einstellungen
-          bearbeiten" ein Dialog mit weiteren Optionen angezeigt
-          werden. Hier können z.B. die beim Upload eingegebenen
-          Metadaten (wie die Angaben zum Urheberrecht) noch einmal
-          bearbeiten werden.
 
           ## Dateien wiederverwenden
 
@@ -1429,73 +1532,72 @@ de:
           "Dateien verwalten“ auf "Hinzufügen -> Wiederverwenden", um
           andere Beiträge nach Dateien zu durchsuchen und sie in den
           bearbeiteten Beitrag zu übernehmen.
+
+          ## Datei-Einstellungen bearbeiten
+
+          Für jede Datei kann über die Schaltfläche "Einstellungen
+          bearbeiten" ein Dialog mit weiteren Optionen angezeigt
+          werden. Hier können z.B. die beim Upload eingegebenen
+          Metadaten (wie die Angaben zum Urheberrecht) noch einmal
+          bearbeiten werden.
       meta_data:
+        general:
+          menu_item: Allgemein
+          text: |
+            # Allgemein
+
+            ## Titel des Pageflows
+
+            Hier kannst Du Deinem Pageflow einen Titel geben, der in der
+            Titelleiste des Browserfensters angezeigt wird. Unter diesem
+            Titel wird Dein Pageflow nach der Veröffentlichung auch in
+            Suchmaschinen indiziert werden.
+
+            ## Sprache
+
+            Wähle hier, in welcher Sprache Dein Pageflow ausgespielt
+            wird. Hierbei geht es um die Frontend-Elemente wie
+            z.B. Scroll-Hinweise, die Mouse-over-Texte der Navigation
+            und das Impressum.
+
+            ## Credits
+
+            Hier kannst Du Deine Impressums-Information im Freitext
+            eingeben. Zudem können für alle Dateien unter „Dateien
+            verwalten“ auch Bildrechte vergeben werden, die dann
+            automatisch im Impressum angezeigt werden.
         menu_item: Titel und Optionen
+        social:
+          menu_item: Social
+          text: |
+            # Social
+
+            ## Social Sharing Bild
+
+            Wähle hier das Bild aus, das beim Teilen des Pageflows in
+            sozialen Netzwerken erscheinen soll.
+
+            ## Zusammenfassung
+
+            Trage hier ein, welcher Beschreibungstext beim Teilen in
+            sozialen Netzwerken angezeigt wird.
+
+            ## Social Sharing URL
+
+            Wenn Beiträge in eigene Webseiten (mit abweichender URL)
+            eingebettet werden kann hier eine individuelle URL
+            festgelegt werden, die beim Teilen des Beitrags verwendet
+            werden soll.
+
+            ## Social Share Links
+
+            Bestimme, welche Share-Buttons beim Klick auf die
+            „Share-Funktion“ angezeigt werden soll.
         text: |
           # Titel und Optionen
 
-          ## Allgemein
-
-          ### Titel des Pageflows
-
-          Hier kannst Du Deinem Pageflow einen Titel geben, der in der
-          Titelleiste des Browserfensters angezeigt wird. Unter diesem
-          Titel wird Dein Pageflow nach der Veröffentlichung auch in
-          Suchmaschinen indiziert werden.
-
-          ### Sprache
-
-          Wähle hier, in welcher Sprache Dein Pageflow ausgespielt
-          wird. Hierbei geht es um nicht editierbare Texte, wie
-          z.B. den Multimedia-Hinweis, Scroll-Hinweis, die Übersicht
-          und Impressum.
-
-          ### Impressum
-
-          Hier kannst Du Deine Impressums-Information im Freitext
-          eingeben.
-
-          ## Erscheinungsbild
-
-          ### Multimedia Hinweis vor dem Start
-
-          Entscheide, ob zu Beginn Deines Pageflows ein Hinweis angezeigt wird.
-
-          ### Kapitelanfang hervorheben
-
-          Mit dieser Option wird der Titel der jeweils ersten Seite
-          eines Kapitels größer dargestellt.
-
-          ## Neue Seiten hervorheben
-
-          Zeigt zum Start des Pageflows in einer Info-Box die seit dem
-          letzten Besuch neu erstellen Seiten an.
-
-          ### Home-Button anzeigen
-
-          Es gibt die Möglichkeit, in der Navigation einen Button
-          anzuzeigen, der auf eine externe Seite verlinkt, z.B. zurück
-          auf die Homepage, von der aus Du den Pageflow verlinkt hast.
-
-          ### Navigationsleiste
-
-          Wähle zwischen "Navigationsleiste mit Fortschrittsbalken“
-          oder "Navigationsleiste mit Thumbnails“. Beachte, dass bei
-          mobilen Endgeräten statt der Navigationsleiste aus
-          Platzgründen in beiden Fällen lediglich das Icon „Übersicht“
-          angezeigt wird.
-
-          ## Social
-
-          ### Social Sharing Bild
-
-          Wähle hier das Bild aus, das beim Teilen des Pageflows in
-          sozialen Netzwerken erscheinen soll.
-
-          ### Zusammenfassung
-
-          Trage hier ein, welcher Beschreibungstext beim Teilen in
-          sozialen Netzwerken angezeigt wird.
+          Allgemeine Einstellungen für den Beitrag. Bitte einen
+          Unterpunkt auf der linken Seite auswählen.
       outline:
         menu_item: Kapitel und Seiten
         text: |
@@ -1522,58 +1624,6 @@ de:
           sich Pageflow, als ob keine Kapitelstruktur vorhanden
           ist. (Kapitel und Kapiteltitel werden in diesem Falle nicht
           in der Übersicht bzw. Navigation dargestellt).
-      overview:
-        menu_item: Übersicht
-        text: |
-          # Übersicht
-
-          Dies ist der Editor zum Bearbeiten eines Pageflows. Mit
-          seiner Zweiteilung ermöglicht er die direkte Vorschau
-          während der Bearbeitung, zeigt Änderungen am Text oder neu
-          ausgewählte Dateien unmittelbar an und speichert diese
-          automatisch.
-
-          Die Seitenleiste kann durch einen Klick auf den Anfasser zur
-          Größenänderung ein- und ausgeblendet werden. Mit einem
-          Verschieben der Seitenleiste nach links und rechts kannst Du
-          die Größe des Vorschaufensters verändern. Wird das
-          Vorschaufenster schmal, und somit eher zu einem hochkantigen
-          Mobiltelefon-Format gestaucht, wird aus Platzgründen statt
-          der Navigationsleiste nur das Icon „Übersicht“ angezeigt.
-
-          Die Navigation des Editors ist unterteilt in die vier
-          Bereiche:
-
-          ## Titel und Optionen
-
-          Unter „Titel und Optionen“ kannst Du grundsätzliche
-          Parameter des Erscheinungsbildes, sowie Titel, Sprache,
-          Impressum etc. einstellen. Dazu können Texte festgelegt
-          werden, die beim Teilen des Beitrags über Social Media
-          Dienste angezeigt werden sollen.
-
-          Details findest Du unter: [Titel und Optionen](#pageflow.help_entries.meta_data)
-
-          ## Dateien verwalten
-
-          Unter „Dateien verwalten“ lädst Du die Mediendateien hoch,
-          die im Pageflow verwendet werden sollen. Du kannst hier auch
-          bereits hochgeladene Videos, Fotos und Audios
-          wiederverwenden.
-
-          Details findest Du unter: [Dateien verwalten](#pageflow.help_entries.files)
-
-          ## Gliederung
-
-          Über die „Gliederung“ kannst Du Kapitel und Seiten
-          hinzufügen, also die eigentlichen Inhalte bearbeiten. Per
-          Drag&Drop lassen sich Seiten und Kapitel auch jederzeit
-          umsortieren.
-
-          Details findest Du unter: [Kapitel und Seiten](#pageflow.help_entries.outline)
-      page_options:
-        menu_item: Allgemeine Seitenoptionen
-        text: "# Allgemeine Seitenoptionen\n\n### Titel\n\nHier gibst Du den Titel der jeweiligen Seite ein. Dieser\nwird nicht nur als Überschrift des Fliesstextes der Seite\nausgespielt, sondern dient zudem als Titel innerhalb der\nNavigation und der Übersicht. Wird eine einzelne Seite in\nsozialen Netzwerken geteilt, ist dieser Titel zugleich auch\nder Titel des Social Media-Beitrages.\n\n### Titel ausblenden\n\nOptional lässt sich der Titel auch ausblenden. Das heisst:\nEr wird nicht mehr als Überschrift im Fliesstext\nangezeigt. Er bleibt zur Identifikation einer Seite\nallerdings in Navigation, Übersicht und geteilten Beträgen\nerhalten.\n\n### Tagline und Untertitel\n\nHier kann wahlweise eine Tagline und/oder ein Untertitel\neingegeben werden. Falls Du ein Häkchen bei „Titel\nausblenden“ gesetzt hast, sind Tagline und Untertitel über\ndem Fliesstext ebenfalls nicht zu sehen.\n\n### Text\n\nDer Textblock kann mit den Buttons unterhalb des\nEingabefeldes formatiert werden. [ B=Fett / I=kursiv /\nU=unterstrichen „gekippte acht“=Link/URL auf fremde Seite\neinfügen].\n\nAlle Änderungen sind in der linken Frontend-Ansicht\nsichtbar, sobald das entsprechende Texteingabefeld im\nEditierbereich verlassen wurde.\n\n### Textposition\n\nWähle hier, ob der Text auf der linken oder rechten Seite\nangezeigt wird.\n\n### Intensität der Abblendung\n\nDie Intensität des Farbverlaufs dient der Lesbarkeit von\nTexten auf Videos oder Bildern.\n\nDurch den Schieberegler kann der Bildhintergrund so stark\nabgedunkelt bzw. aufgehellt werden, bis der Kontrast\nzwischen Bild und Text ausreichend ist.\n\n### Farben invertieren\n\nBeim Invertieren werden „hell“ und „dunkel“ vertauscht, die\nsonst weiße Schrift ändert sich dabei automatisch in\nschwarz.\n\nGrundsätzlich gilt: Helle Schrift für dunkle Bilder, dunkle\nSchrift für helle Bilder.\n\n### Thumbnail\n\nDas Thumbnail ersetzt das ansonsten automatisch generierte\nVorschaubild in der Navigation und in der Übersicht.\n\n### In Navigationsleiste anzeigen\n\nIst diese Option nicht gesetzt, wird die jeweilige Seite\nnicht in der Navigation repräsentiert, kann also nicht\ndirekt über die Navigation erreicht werden.\n\nDies bietet sich vor allem für Seiten an, die inhaltlich als\n„Unterseiten“ einer anderen Seite anzusehen sind.\n\n### Übergangseffekt\n\nEs gibt verschiedene Effekte, die sichtbar sind, wenn von einer Kapitelseite zur nächsten gescrollt oder geklickt wird. Zur Auswahl stehen Seitenübergänge, wie „Überblendung“, „Schwarzblende“ oder „Harter Schnitt“ die sich vertikal auswirken, zudem kann auch „Horizontal Scrollen“ von rechts oder links ausgewählt werden. \n\nWelcher Effekt verwendet wird, kann unter „Optionen“ individuell für jede Seite festgelegt werden.\n\n### Text verzögert einblenden\n\nBestimme mit dieser Option, ob Text und Abblendung mit zeitlicher Verzögerung angezeigt werden.\nHierbei sehen User zunächst nur den Hintergrund, dann erscheinen Titel, Tagline und Untertitel und mit minimaler Verzögerung schließlich der Fließtext.\n\nInsgesamt stehen drei Verzögerungslängen zur Verfügung: kurz = 1 Sekunde, mittel = 3 Sekunde, lang = 5 Sekunde.\n\nDieses Feature eignet sich zum Beispiel für Intros oder Kapitelanfänge.\n\n### Beschreibung für Übersicht\n\nHier kann der Text eingegeben werden, der angezeigt wird,\nwenn der User in der Übersicht mit der Mouse über die\njeweilige Seite fährt. Außerdem entspricht der hier\neingegebene Text"
       page_types:
         menu_item: Seitentypen
         text: |
@@ -1586,10 +1636,7 @@ de:
           in der linken Spalte.
       publishing:
         menu_item: Veröffentlichen
-        text: "# Veröffentlichen\n\nKlicke in der Gliederung auf die Schaltfläche\n„Veröffentlichen“ um Deinen Pageflow zu publizieren. Eine\nReportage kann entweder zeitlich unbegrenzt oder bis zu\neinem bestimmten Stichtag veröffentlicht\nwerden. \n\nAußerdem gibt es die Möglichkeit, Pageflows mit einem Passwort zu schützen. \nHierzu muss einfach das entsprechende Häkchen bei „Mit Passwort schützen\" gesetzt werden. \nDas System verwendet als Benutzernamen den Namen des Kontos und generiert ein Passwort, \nwelches auch manuell geändert werden kann. \n\nBeiträge, die bereits veröffentlicht sind, können nachträglich mit einem Passwort geschützt werden - \nund andersherum können auch geschützte Beiträge anschließend mit erneutem Klick auf „Veröffentlichen“ vom Passwortschutz befreit werden. \nBei der Veröffentlichung werden die auszuführenden Schritte im Dialogfenster angezeigt und erklärt.\n\nVeröffentlichte Pageflows können jederzeit manuell\ndepubliziert werden. Sollte eine Reportage bereits\nveröffentlicht sein, bleiben Änderungen solange öffentlich\nunsichtbar, bis die Reportage erneut veröffentlicht wird.\nEine Reportage kann stets nur von einem Redakteur zur\ngleichen Zeit bearbeitet werden.\n\nVorschaubild zum Einbetten in Externe Webseiten Nach der\nVeröffentlichung erstellt das System ein Vorschaubild, das\nals iframe zur Verlinkung in eine externe Seite eingebunden\nwerden kann.  Anhand des ausgespielten Codes lässt sich die\nGröße des iframes frei einstellen. Hierbei ist jedoch eine\nMindesthöhe von 150px und und eine Mindestbreite von 220px\nzu beachten."
-      storylines:
-        menu_item: Erzählstränge
-        text: "# Erzählstränge\n\nErgänzend zur linearen Erzählung von „oben nach unten“, können auch weitere (non-lineare) Erzählstränge als Exkurse zu vertiefenden Inhalten genutzt werden. Mit „Erzählstrang“ ist hier die zusammenhängende Kapitel- und Seitenabfolge gemeint, durch die ein User hindurch scrollt. Zu unterscheiden ist zwischen dem sogenannten Haupterzählstrang, in dem ein User zu Beginn eines Pageflows einsteigt, und weiteren untergeordneten Erzählsträngen. \n\nUm vom Haupterzählstrang einen Abzweig zu erstellen, benutze eine „Verweise“-Seite (Mosaik, Collage oder Hotspot) und lege auf der jeweiligen Seite unter „Verweise“ die entsprechenden Verknüpfungen an. \n\nDabei kann durch das Festlegen einer „übergeordneten Seite“ bestimmt werden, zu welcher Seite der User am Ende des Erzählstrangs  gelangt.\n\nOptisch unterstützt werden diese Exkurse in untergeordnete Erzählstränge durch einen horizontalen Seitenübergangseffekt, der beim Eintreten und Verlassen dieser Stränge automatisch eingestellt ist. \n\nErstellt werden diese Erzählstränge in der Gliederung über ein Klick auf die Plus-Schaltfläche neben der Erzählstrang-Auswahl. Dabei öffnet sich automatisch ein neues Kapitel, in dem dann weitere Seiten angelegt werden können.\n\n\n### Übergeordnete Seiten\n\nIn jedem Untererzählstrang muss eine „Übergeordnete Seite“ festgelegt werden, die bestimmt, wohin ein User beim zurück-scrollen gelangt. Mit einem Klick auf das Stift-Symbol neben der Erzählstrang-Auswahl kann diese Zielseite ausgewählt werden. Durch die Auswahl einer übergeordneten Seite erscheint auf allen Seiten eines untergeordneten Erzählstrangs zudem automatisch ein „Zurück“-Button, der zu der übergeordneten Seite führt. \n\n\n### Kapitel-Hierarchie\n\nDurch die Verwendung mehrerer „untergeordneter“ Erzählstränge und der Festlegung von übergeordneten Seiten ergibt sich eine Kapitelhierarchie, wie man sie auch von Buch-Gliederungen kennt:\n\n1. (Hauptstrang), 1.1 (Übergeordneter Unterstrang), 1.1.1 (vertiefende Seite im übergeordneten Unterstrang) und so weiter.\n\nDiese Hierarchie kann nachträglich in der Erzählstrang-Auswahl über ein Klick auf Stift-Symbol geändert werden. Ein untergeordneter Erzählstrang kann an dieser Stelle zudem auch nachträglich zum Haupt-Erzählstrang umsortiert werden.\n\n\n### Scroll-Nachfolger\n\nFalls der User von der letzten Seite eines Unterkapitels (1.1.1) auf eine andere Stelle im Beitrag geleitet werden soll (z.B. 2.1), kann hierzu ebenfalls über das Stiftsymbol in den Erzählstrang-Einstellungen der sogenannte „Scroll-Nachfolger“ festgelegt werden. Um in dem Beispiel zu bleiben wäre der folgende Ablauf denkbar: 1 -> 1.1 -> 1.1.1 -> 2.1\n\nAchtung: Während des Editierens wird immer nur das aktuell ausgewählte Kapitel angezeigt. Um zu den anderen Erzählsträngen zu gelangen klicke auf das Auswahlmenü „Erzählstrang“."
+        text: "# Veröffentlichen\n\nKlicke in der Gliederung auf die Schaltfläche\n„Veröffentlichen“ um Deinen Pageflow zu publizieren. Eine\nReportage kann entweder zeitlich unbegrenzt oder bis zu\neinem bestimmten Stichtag veröffentlicht\nwerden. \n\n### Passwortschutz\n\nAußerdem gibt es die Möglichkeit, Pageflows mit einem Passwort zu schützen. \nHierzu muss einfach das entsprechende Häkchen bei „Mit Passwort schützen\" gesetzt werden. \nDas System verwendet als Benutzernamen den Namen des Kontos und generiert ein Passwort, \nwelches auch manuell geändert werden kann. \n\nBeiträge, die bereits veröffentlicht sind, können nachträglich mit einem Passwort geschützt werden - und andersherum können auch geschützte Beiträge anschließend mit erneutem Klick auf „Veröffentlichen“ vom Passwortschutz befreit werden. Bei der Veröffentlichung werden die auszuführenden Schritte im Dialogfenster angezeigt und erklärt.\n\n### Änderungen nach der Veröffentlichung\n\nVeröffentlichte Pageflows können jederzeit manuell depubliziert werden. Sollte eine Reportage bereits veröffentlicht sein, werden nachträgliche Änderungen erst öffentlich sichtbar, sobald die Reportage erneut veröffentlicht wird. \n\n\n### Einbettung als iframe\n\nVeröffentlichte Beiträge können auch in die eigene Webseite eingebettet werden. Weitere Informationen findest Du in diesem [Artikel](https://pageflow.freshdesk.com/support/solutions/articles/11000002742-wie-kann-ich-einen-beitrag-in-eine-webseite-einbetten)\n\n### Einbettung iframe-Teaser \n\nVorschaubild zum Einbetten in Externe Webseiten Nach der Veröffentlichung erstellt das System ein Vorschaubild, das als iframe zur Verlinkung in eine externe Seite eingebunden werden kann.  Anhand des ausgespielten Codes lässt sich die\nGröße des iframes frei einstellen. Hierbei ist jedoch eine Mindesthöhe von 150px und und eine Mindestbreite von 220px zu beachten."
       text_tracks:
         menu_item: Textspuren
         text: |-
@@ -1652,6 +1699,9 @@ de:
         image_rights: Bildrechte
     highdef_video_encoding:
       feature_name: Full HD und 4K Videos
+    initial_password:
+      submit: Speichern und anmelden
+      title: Passwort festlegen
     invalid_transition: Der gewünschte Statuswechsel ist nicht erlaubt.
     languages:
       ar: Arabisch
@@ -1661,23 +1711,33 @@ de:
       el: Griechisch
       en: Englisch
       es: Spanisch
+      fi: Finnisch
       fr: Französisch
       fy: Friesisch
       hi: Hindi
       it: Italienisch
+      ja: Japanisch
       lb: Luxemburgisch
+      nb: Bokmål
       nl: Holländisch
+      nn: Nynorsk
+      'no': Norwegisch
       pl: Polnisch
       pt: Portugiesisch
       rm: Rätoromanisch
       ru: Russisch
+      se: Nordsamisch
       sr: Serbisch
+      sv: Schwedisch
       tr: Türkisch
       unknown: "(Unbekannt)"
       zh: Chinesisch
+    media_loading_spinner:
+      widget_type_name: Media
     page_transitions:
       crossfade: Überblenden
       cut: Harter Schnitt
+      default: "(Standard)"
       fade: Hintergrund Blenden/Vordergrund Scrollen
       fade_to_black: Schwarzblende
       scroll: Scrollen
@@ -1685,8 +1745,14 @@ de:
       scroll_over_from_left: Überlagern (von links)
       scroll_over_from_right: Überlagern (von rechts)
       scroll_right: Scrollen (von rechts)
+    paged_entry_type:
+      feature_name: Beitragstyp Seitenbasiert/Klassisch
+    phone_horizontal_slideshow_mode:
+      feature_name: Horizontales Wischen auf Phones
     quotas:
       exhausted: Quota verbraucht.
+    scrolled_entry_type:
+      feature_name: Beitragstyp Kontinuierlich Scrollend/Pageflow Next
     selectable_themes:
       feature_name: Editor-Theme-Auswahl
     storyline_attributes:
@@ -1715,13 +1781,21 @@ de:
       feature_name: Erzählstränge
       main: Hauptstrang
       untitled: Unbenannter Erzählstrang
+    structured_data:
+      feature_name: Eingebettete strukturierte Daten
+    title_loading_spinner:
+      feature_name: "'Titel und Bild'-Lade-Ansicht"
+      widget_type_name: Titel und Bild
     ui:
       configuration_editor:
         tabs:
+          cookie_notice_bar: Cookie Hinweis
           files: Dateien
           general: Allgemein
           links: Verweise
+          loading_spinner: Lade-Ansicht
           options: Optionen
+          phone_horizontal_slideshow_mode: Horizontales Wischen auf Phones
           social: Social
           widgets: Erscheinungsbild
       inline_help:
@@ -1730,17 +1804,9 @@ de:
         pageflow/entry:
           author: Name des Autors.
           credits: Text wird zusammen mit dem Impressumsverweis angezeigt.
-          emphasize_chapter_beginning: Mit dieser Option wird der Titel der jeweils ersten Seite eines Kapitels größer dargestellt.
-          emphasize_new_pages: Zeigt zum Start des Pageflows in einer Info-Box die seit dem letzten Besuch neu erstellen Seiten an.
-          home_button_enabled: Es gibt die Möglichkeit, in der Navigation einen Button anzuzeigen, der auf eine externe Seite verlinkt, z.B. zurück auf die Homepage, von der aus Du den Pageflow verlinkt hast.
-          home_button_enabled_disabled: Diese Funktion steht in diesem Theme nicht zur Verfügung.
-          home_url: URL der Übersichtseite. Leer lassen, um Standard zu übernehmen.
-          home_url_disabled: Diese Funktion steht in diesem Theme nicht zur Verfügung.
           keywords: Schlüsselwörter als Vorschlag für Suchmaschinen.
-          manual_start: Entscheide, ob zu Beginn Deines Pageflows ein Hinweis angezeigt wird.
-          overview_button_enabled: In der Übersicht werden die Kapitel und Seiten des Haupterzählstrangs angezeigt.
-          overview_button_enabled_disabled: Diese Funktion steht in diesem Theme nicht zur Verfügung.
           publisher: Name oder Firmenname des Herausgeber.
+          share_providers: Social Media Plattformen, die unter dem Menüpunkt "Teilen" des Beitrags angezeigt werden sollen
           share_url: URL, die geteilt werden soll, wenn der Benutzer auf einen der Social Media Buttons klickt. Feld frei lassen, um URL des veröffentlichten Beitrags zu verwenden.
           summary: 'Trage hier ein, welcher Beschreibungstext beim Teilen in sozialen Netzwerken angezeigt wird.
 
@@ -1756,6 +1822,7 @@ de:
             Die Intensität des Farbverlaufs dient der Lesbarkeit von Texten auf Videos oder Bildern.
 
             Durch den Schieberegler kann der Bildhintergrund so stark abgedunkelt bzw. aufgehellt werden, bis der Kontrast zwischen Bild und Text ausreichend ist.
+          hide_logo: Logo auf dieser Seite ausblenden
           invert: "Beim Invertieren werden „hell“ und „dunkel“ vertauscht, die sonst weiße Schrift ändert sich dabei automatisch in schwarz. \n\nGrundsätzlich gilt: Helle Schrift für dunkle Bilder, dunkle Schrift für helle Bilder."
           mobile_poster_image_id: Dieses Bild wird in der Mobilvariante der Seite als Posterbild gezeigt.
           text: |-
@@ -1763,7 +1830,7 @@ de:
 
             Alle Änderungen sind in der linken Frontend-Ansicht sichtbar, sobald das entsprechende Texteingabefeld im Editierbereich verlassen wurde.
           thumbnail_image_id: Das Thumbnail ersetzt das ansonsten automatisch generierte Vorschaubild in der Navigation und in der Übersicht.
-          transition: Wähle hier den Effekt, der beim Erreichen dieser der Seite benutzt werden soll.
+          transition: Wähle hier den Effekt, der beim Erreichen dieser Seite benutzt werden soll.
       templates:
         inputs:
           file_input:
@@ -1775,8 +1842,17 @@ de:
             bold: Fett
             cancel: Abbrechen
             create_link: Link einfügen
+            insert_ordered_list: Nummerierte Liste einfügen
+            insert_unordered_list: Aufzählungsliste einfügen
             italic: Kursiv
-            ok: Ok
+            link_type:
+              page_link: Seite
+              url: URL
+            open_in_new_tab: In neuem Tab öffnen
+            open_in_new_tab_help: Empfohlen, damit der Beitrag nach Betrachten des Links nicht erneut geladen werden muss. Bitte beachte, dass Links in der Editor-Vorschau immer in einem neuen Tab geöffnet werden.
+            remove_link: Link entfernen
+            save: Speichern
+            target: Ziel
             underline: Unterstrichen
             url: URL
           url_display:
@@ -1789,6 +1865,8 @@ de:
         inputs:
           file_input_view:
             none: "(Kein)"
+          json_input_view:
+            invalid: Ungültige JSON Daten.
           proxy_url_input_view:
             http_error: Die URL konnte nicht erfolgreich abgerufen werden (Der Server antwortete mit HTTP Status Code ' %{status}')
             url_validation: Prüfe Erreichbarkeit der URL...
@@ -1796,6 +1874,7 @@ de:
             none: "(Kein)"
             placeholder: Standard (%{text})
           text_input_view:
+            max_characters_exceeded: Maximale Zeichenanzahl überschritten (%{max_length})
             required_field: Muss ausgefüllt werden
           url_input_view:
             required_field: Muss ausgefüllt werden
@@ -1803,6 +1882,8 @@ de:
             url_hint: URL muss mit http:// beginnen.
             url_hint_https: URL muss mit http:// oder https:// beginnen.
     unauthorized: Sie sind nicht berechtigt diese Seite anzuzeigen.
+    unmute_button:
+      widget_type_name: "'Ton ein'-Button"
     user_mailer:
       invitation:
         ending: Dankeschön und viel Spaß,
@@ -1814,24 +1895,32 @@ de:
       help_entries:
         page_type:
           menu_item: Video
-          text: "# Video\n\n*Wiedergabe einer Videodatei mit Steuerelementen* \n   \nAnders als bei „Hintergrund-Videos“ werden hier Textelemente nach ein\npaar Sekunden automatisch ausgeblendet, um die\nAufmerksamkeit auf das Bewegtbild zu lenken. Mit\nSteuerelementen kann der Nutzer das Video jederzeit\nstarten und pausieren, vor- oder zurückspulen. Ein\nweiterer Unterschied ist, dass Du wählen kannst, ob ein\nVideo automatisch gestartet wird, sobald die Seite\nangezeigt wird.  Als dezente Alternative oder Ergänzung zu\nden normalen Texteingabemöglichkeiten, kann eine\nsogenannte „Infobox“ mit Text befüllt werden.\n\nUnter Optionen lässt sich ein automatisches weiterscrollen am Ende des Videos aktivieren. \nDas kann nützlich sein, um einen nahtlosen Übergang zur nächsten Seite herzustellen.\n\nTypische Anwendungsbeispiele: Filme aller Art, Interviews,\nPortrait"
+          text: "# Video\n\n*Wiedergabe einer Videodatei mit Steuerelementen* \n   \nAnders als bei „Hintergrund-Videos“ werden hier Textelemente nach ein\npaar Sekunden automatisch ausgeblendet, um die\nAufmerksamkeit auf das Bewegtbild zu lenken. Mit\nSteuerelementen kann der Nutzer das Video jederzeit\nstarten und pausieren, vor- oder zurückspulen. Ein\nweiterer Unterschied ist, dass Du wählen kannst, ob ein\nVideo automatisch* gestartet wird, sobald die Seite\nangezeigt wird.  Als dezente Alternative oder Ergänzung zu\nden normalen Texteingabemöglichkeiten, kann eine\nsogenannte „Infobox“ mit Text befüllt werden.\n\nUnter Optionen lässt sich ein automatisches Weiterscrollen am Ende des Videos aktivieren. \nDas kann nützlich sein, um einen nahtlosen Übergang zur nächsten Seite herzustellen.\n\nTypische Anwendungsbeispiele: Filme aller Art, Interviews,\nPortrait\n\n*Hinweis zum Autoplay bei Videos: Aufgrund technischer Einschränkungen, basierend auf der „Autoplay Policy“ der Browser-Hersteller, können Videos mit Ton nicht auf allem Geräten/Browsern automatisch abgespielt werden. Bei Safari  und auf mobilen Geräten können Videos nur manuell gestartet werden. "
       page_attributes:
         mobile_poster_image_id:
           inline_help: Wird in der Mobilvariante gezeigt, bevor das Video startet.
       page_type_category_name: Media
       page_type_description: Wiedergabe einer Videodatei mit Steuerelementen
       page_type_name: Video
+    waveform_player_controls:
+      feature_name: Waveform-Steuerlement-Variante für Audio-Seite
     widgets:
       none: "(Kein)"
       roles:
         analytics: Zählpixel
+        background_media_control: Hintergrund-Media-Control
+        cookie_notice: Cookie Hinweis
+        loading_spinner: Lade-Ansicht
         mobile_navigation: Mobile Navigation
         navigation: Navigationsleiste
         player_controls: Player Controls
+        slideshow_mode: Steuerungsgesten
       type_names:
         classic_player_controls: Klassisch
         default_mobile_navigation: Navigationsmenü mit Thumbnails
         default_navigation: Navigationsleiste mit Thumbnails
+        default_slideshow_mode: Vertikales Scrollen/Wischen
+        phone_horizontal_slideshow_mode: Horizontales Wischen auf Phones
         slim_player_controls: Minimalistisch
   support:
     array:

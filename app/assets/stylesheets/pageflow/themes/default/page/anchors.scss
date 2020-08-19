@@ -8,12 +8,19 @@ $page-anchor-color: #fff !default;
 /// Color of links inside the text on inverted pages
 $page-anchor-inverted-color: #000 !default;
 
-.contentText a {
-  @extend %anchor;
-  color: $page-anchor-color;
-  pointer-events: all;
-}
+/// Typography settings of links in page content text
+$page-anchor-typography: () !default;
 
-.invert .contentText a {
-  color: $page-anchor-inverted-color;
+.page {
+  .page_text a {
+    @extend %anchor;
+    color: $page-anchor-color;
+    pointer-events: all;
+    margin-right: 0;
+    @include typography($page-anchor-typography)
+  }
+
+  &.invert .page_text a {
+    color: $page-anchor-inverted-color;
+  }
 }

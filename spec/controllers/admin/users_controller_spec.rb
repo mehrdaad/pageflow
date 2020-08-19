@@ -11,7 +11,7 @@ module Pageflow
             it 'does not include sensitive data' do
               user = create(:user, :admin)
 
-              sign_in(user)
+              sign_in(user, scope: :user)
               get(:index, format: format)
 
               expect(response.body).not_to include('password')
@@ -32,8 +32,8 @@ module Pageflow
 
         user = create(:user, :manager, on: create(:account))
 
-        sign_in(user)
-        get(:show, id: user.id)
+        sign_in(user, scope: :user)
+        get(:show, params: {id: user.id})
 
         expect(response.body)
           .to have_css('.status_tag_row th',
@@ -48,8 +48,8 @@ module Pageflow
 
           user = create(:user, :admin)
 
-          sign_in(user)
-          get(:show, id: user.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: user.id})
 
           expect(response.body).to have_css('.status_tag_row th',
                                             text: ::User.human_attribute_name(:admin))
@@ -62,8 +62,8 @@ module Pageflow
 
           user = create(:user, :manager, on: create(:account))
 
-          sign_in(user)
-          get(:show, id: user.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: user.id})
 
           expect(response.body).not_to have_css('.status_tag_row th',
                                                 text: ::User.human_attribute_name(:admin))
@@ -93,8 +93,8 @@ module Pageflow
                                                        name: :some_tab,
                                                        component: tab_view_component,
                                                        required_account_role: :manager)
-          sign_in(user)
-          get(:show, id: user.id)
+          sign_in(user, scope: :user)
+          get(:show, params: {id: user.id})
 
           expect(response.body).to have_selector(tab_view_selector)
         end
@@ -107,8 +107,8 @@ module Pageflow
                                                          name: :some_tab,
                                                          component: tab_view_component,
                                                          admin_only: true)
-            sign_in(user)
-            get(:show, id: user.id)
+            sign_in(user, scope: :user)
+            get(:show, params: {id: user.id})
 
             expect(response.body).to have_selector(tab_view_selector)
           end
@@ -121,9 +121,9 @@ module Pageflow
                                                          name: :some_tab,
                                                          component: tab_view_component,
                                                          admin_only: true)
-            sign_in(user)
-            get(:show, id: user.id)
+            sign_in(user, scope: :user)
 
+            get(:show, params: {id: user.id})
             expect(response.body).not_to have_selector(tab_view_selector)
           end
         end
@@ -137,7 +137,7 @@ module Pageflow
         account = create(:account)
 
         sign_in(create(:user, :manager, on: account))
-        get(:quota_state, account_id: account)
+        get(:quota_state, params: {account_id: account})
 
         expect(response.body).to have_selector('.quota_state')
       end
@@ -146,7 +146,7 @@ module Pageflow
         account = create(:account)
 
         sign_in(create(:user, :manager, on: account))
-        get(:quota_state, account_id: account)
+        get(:quota_state, params: {account_id: account})
 
         expect(response.body).not_to have_selector('body.active_admin')
       end
@@ -155,9 +155,9 @@ module Pageflow
         account = create(:account)
 
         sign_in(create(:user, :publisher, on: account))
-        get(:quota_state, account_id: account)
+        get(:quota_state, params: {account_id: account})
 
-        expect(response).to have_http_status(302)
+        expect(response.body).to have_selector('.user_quota_not_allowed')
       end
     end
 
@@ -186,11 +186,13 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'member'
+                   }
                  }
                })
         }.to change { User.count }
@@ -204,11 +206,13 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'manager'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'manager'
+                   }
                  }
                })
         }.to change { account_members.with_role_at_least(:manager).count }
@@ -222,12 +226,14 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user,
-                                      email: user.email),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user,
+                                        email: user.email),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'member'
+                   }
                  }
                })
         }.to change { account.users.count }
@@ -241,12 +247,14 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user,
-                                      email: existing_user.email),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'manager'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user,
+                                        email: existing_user.email),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'manager'
+                   }
                  }
                })
         }.not_to change { Membership.count }
@@ -262,11 +270,13 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'superman'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'superman'
+                   }
                  }
                })
         }.not_to change { User.count }
@@ -281,11 +291,13 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: -1,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: -1,
+                     role: 'member'
+                   }
                  }
                })
         }.not_to change { User.count }
@@ -300,12 +312,14 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user,
-                                      admin: true),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user,
+                                        admin: true),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'member'
+                   }
                  }
                })
         }.not_to change { User.admins.count }
@@ -314,16 +328,18 @@ module Pageflow
       it 'allows admins to create admins' do
         account = create(:account)
 
-        sign_in(create(:user, :admin))
+        sign_in(create(:user, :admin), scope: :user)
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user,
-                                      admin: true),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user,
+                                        admin: true),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'member'
+                   }
                  }
                })
         }.to change { User.admins.count }
@@ -337,11 +353,13 @@ module Pageflow
 
         expect {
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: other_account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: other_account.id,
+                     role: 'member'
+                   }
                  }
                })
         }.to_not change { other_account.users.count }
@@ -357,11 +375,13 @@ module Pageflow
           expect {
             request.env['HTTP_REFERER'] = admin_users_path
             post(:invitation,
-                 invitation_form: {
-                   user: attributes_for(:valid_user),
-                   membership: {
-                     entity_id: account.id,
-                     role: 'member'
+                 params: {
+                   invitation_form: {
+                     user: attributes_for(:valid_user),
+                     membership: {
+                       entity_id: account.id,
+                       role: 'member'
+                     }
                    }
                  })
           }.not_to change { User.count }
@@ -377,12 +397,14 @@ module Pageflow
           expect {
             request.env['HTTP_REFERER'] = admin_users_path
             post(:invitation,
-                 invitation_form: {
-                   user: attributes_for(:valid_user,
-                                        email: user.email),
-                   membership: {
-                     entity_id: account.id,
-                     role: 'member'
+                 params: {
+                   invitation_form: {
+                     user: attributes_for(:valid_user,
+                                          email: user.email),
+                     membership: {
+                       entity_id: account.id,
+                       role: 'member'
+                     }
                    }
                  })
           }.not_to change { account.users.count }
@@ -396,11 +418,13 @@ module Pageflow
 
           request.env['HTTP_REFERER'] = admin_users_path
           post(:invitation,
-               invitation_form: {
-                 user: attributes_for(:valid_user),
-                 membership: {
-                   entity_id: account.id,
-                   role: 'member'
+               params: {
+                 invitation_form: {
+                   user: attributes_for(:valid_user),
+                   membership: {
+                     entity_id: account.id,
+                     role: 'member'
+                   }
                  }
                })
 
@@ -420,11 +444,13 @@ module Pageflow
 
           expect {
             post(:invitation,
-                 invitation_form: {
-                   user: attributes_for(:valid_user),
-                   membership: {
-                     entity_id: account.id,
-                     role: 'manager'
+                 params: {
+                   invitation_form: {
+                     user: attributes_for(:valid_user),
+                     membership: {
+                       entity_id: account.id,
+                       role: 'manager'
+                     }
                    }
                  })
           }.to change { account.users.count }
@@ -442,12 +468,14 @@ module Pageflow
 
           expect {
             post(:invitation,
-                 invitation_form: {
-                   user: attributes_for(:valid_user,
-                                        email: user.email),
-                   membership: {
-                     entity_id: account.id,
-                     role: 'member'
+                 params: {
+                   invitation_form: {
+                     user: attributes_for(:valid_user,
+                                          email: user.email),
+                     membership: {
+                       entity_id: account.id,
+                       role: 'member'
+                     }
                    }
                  })
           }.not_to change { account.users.count }
@@ -463,7 +491,7 @@ module Pageflow
         user = create(:user, :manager, on: account)
 
         sign_in(create(:user, :manager, on: account))
-        patch :update, id: user, user: {admin: true}
+        patch :update, params: {id: user, user: {admin: true}}
 
         expect(user.reload).not_to be_admin
       end
@@ -471,21 +499,21 @@ module Pageflow
       it 'allows admin to make users admin' do
         user = create(:user)
 
-        sign_in(create(:user, :admin))
-        patch :update, id: user, user: {admin: true}
+        sign_in(create(:user, :admin), scope: :user)
+        patch :update, params: {id: user, user: {admin: true}}
 
         expect(user.reload).to be_admin
       end
     end
 
-    describe '#resend_invitation' do
+    describe '#resend_invitation', perform_jobs: true do
       it 'allows account manager to resend invitation' do
         account = create(:account)
         user = create(:user, :member, on: account)
 
         sign_in(create(:user, :manager, on: account))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :resend_invitation, id: user
+        post :resend_invitation, params: {id: user}
 
         expect(ActionMailer::Base.deliveries).not_to be_empty
       end
@@ -496,7 +524,7 @@ module Pageflow
 
         sign_in(create(:user, :publisher, on: account))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :resend_invitation, id: user
+        post :resend_invitation, params: {id: user}
 
         expect(ActionMailer::Base.deliveries).to be_empty
       end
@@ -509,7 +537,7 @@ module Pageflow
 
         sign_in(create(:user, :admin))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :suspend, id: user
+        post :suspend, params: {id: user}
 
         expect(user.reload).to be_suspended
       end
@@ -520,7 +548,7 @@ module Pageflow
 
         sign_in(create(:user, :manager, on: account))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :suspend, id: user
+        post :suspend, params: {id: user}
 
         expect(user.reload).not_to be_suspended
       end
@@ -536,7 +564,7 @@ module Pageflow
 
           sign_in(create(:user, :manager, on: account))
           request.env['HTTP_REFERER'] = admin_users_path
-          post :suspend, id: user
+          post :suspend, params: {id: user}
 
           expect(user.reload).to be_suspended
         end
@@ -551,7 +579,7 @@ module Pageflow
 
           sign_in(create(:user, :publisher, on: account))
           request.env['HTTP_REFERER'] = admin_users_path
-          post :suspend, id: user
+          post :suspend, params: {id: user}
 
           expect(user.reload).not_to be_suspended
         end
@@ -565,7 +593,7 @@ module Pageflow
 
         sign_in(create(:user, :admin))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :unsuspend, id: user
+        post :unsuspend, params: {id: user}
 
         expect(user.reload).not_to be_suspended
       end
@@ -576,7 +604,7 @@ module Pageflow
 
         sign_in(create(:user, :manager, on: account))
         request.env['HTTP_REFERER'] = admin_users_path
-        post :unsuspend, id: user
+        post :unsuspend, params: {id: user}
 
         expect(user.reload).to be_suspended
       end
@@ -592,7 +620,7 @@ module Pageflow
 
           sign_in(create(:user, :manager, on: account))
           request.env['HTTP_REFERER'] = admin_users_path
-          post :unsuspend, id: user
+          post :unsuspend, params: {id: user}
 
           expect(user.reload).not_to be_suspended
         end
@@ -607,7 +635,7 @@ module Pageflow
 
           sign_in(create(:user, :publisher, on: account))
           request.env['HTTP_REFERER'] = admin_users_path
-          post :unsuspend, id: user
+          post :unsuspend, params: {id: user}
 
           expect(user.reload).to be_suspended
         end
@@ -622,7 +650,7 @@ module Pageflow
         sign_in(create(:user, :admin))
 
         expect {
-          delete :destroy, id: user
+          delete :destroy, params: {id: user}
         }.to(change { User.count })
       end
 
@@ -633,7 +661,7 @@ module Pageflow
         sign_in(create(:user, :manager, on: account))
 
         expect {
-          delete :destroy, id: user
+          delete :destroy, params: {id: user}
         }.not_to(change { User.count })
       end
 
@@ -649,7 +677,7 @@ module Pageflow
           sign_in(create(:user, :manager, on: account))
 
           expect {
-            delete :destroy, id: user
+            delete :destroy, params: {id: user}
           }.to(change { User.count })
         end
 
@@ -664,7 +692,7 @@ module Pageflow
           sign_in(create(:user, :publisher, on: account))
 
           expect {
-            delete :destroy, id: user
+            delete :destroy, params: {id: user}
           }.not_to(change { User.count })
         end
       end
@@ -679,11 +707,13 @@ module Pageflow
                       last_name: 'Tomson',
                       locale: 'de')
 
-        sign_in(user)
-        patch(:me, user: {
-                first_name: 'Thom',
-                last_name: 'Thomson',
-                locale: 'en'
+        sign_in(user, scope: :user)
+        patch(:me, params: {
+                user: {
+                  first_name: 'Thom',
+                  last_name: 'Thomson',
+                  locale: 'en'
+                }
               })
 
         expect(user.reload).to have_attributes(first_name: 'Thom',
@@ -694,11 +724,13 @@ module Pageflow
       it 'allows users to update their password when passing current password and confirmation' do
         user = create(:user, password: 'some!123pass')
 
-        sign_in(user)
-        patch(:me, user: {
-                current_password: 'some!123pass',
-                password: 'new!123pass',
-                password_confirmation: 'new!123pass'
+        sign_in(user, scope: :user)
+        patch(:me, params: {
+                user: {
+                  current_password: 'some!123pass',
+                  password: 'new!123pass',
+                  password_confirmation: 'new!123pass'
+                }
               })
 
         expect(user.reload.valid_password?('new!123pass')).to eq(true)
@@ -707,11 +739,13 @@ module Pageflow
       it 'does not update password when current password is not correct' do
         user = create(:user, password: 'some!123pass')
 
-        sign_in(user)
-        patch(:me, user: {
-                current_password: 'wrong!123pass',
-                password: 'new!123pass',
-                password_confirmation: 'new!123pass'
+        sign_in(user, scope: :user)
+        patch(:me, params: {
+                user: {
+                  current_password: 'wrong!123pass',
+                  password: 'new!123pass',
+                  password_confirmation: 'new!123pass'
+                }
               })
 
         expect(user.reload.valid_password?('some!123pass')).to eq(true)
@@ -720,11 +754,13 @@ module Pageflow
       it 'does not update password when password confirmation does not match' do
         user = create(:user, password: 'some!123pass')
 
-        sign_in(user)
-        patch(:me, user: {
-                current_password: 'some!123pass',
-                password: 'new!123pass',
-                password_confirmation: 'other!123pass'
+        sign_in(user, scope: :user)
+        patch(:me, params: {
+                user: {
+                  current_password: 'some!123pass',
+                  password: 'new!123pass',
+                  password_confirmation: 'other!123pass'
+                }
               })
 
         expect(user.reload.valid_password?('some!123pass')).to eq(true)
@@ -734,8 +770,8 @@ module Pageflow
         account = create(:account)
         user = create(:user, :manager, on: account)
 
-        sign_in(user)
-        patch(:me, user: {admin: true})
+        sign_in(user, scope: :user)
+        patch(:me, params: {user: {admin: true}})
 
         expect(user.reload).not_to be_admin
       end
@@ -745,9 +781,11 @@ module Pageflow
                       first_name: 'Tom',
                       last_name: 'Thomson')
 
-        sign_in(user)
-        patch(:me, user: {
-                first_name: ''
+        sign_in(user, scope: :user)
+        patch(:me, params: {
+                user: {
+                  first_name: ''
+                }
               })
 
         expect(response.body).to have_selector('#current_user > a', text: 'Tom Thomson')
@@ -759,14 +797,14 @@ module Pageflow
         sign_in(create(:user, password: '@qwert123'))
 
         expect do
-          delete(:delete_me, user: {current_password: '@qwert123'})
+          delete(:delete_me, params: {user: {current_password: '@qwert123'}})
         end.to change { User.count }
       end
 
       it 'does not allow to destroy the user when authorize_user_deletion non-true' do
         user = create(:user, password: '@qwert123')
         create(:membership, user: user, entity: create(:account))
-        sign_in(user)
+        sign_in(user, scope: :user)
         Pageflow.config.authorize_user_deletion =
           lambda do |user_to_delete|
             if user_to_delete.accounts.all? { |account| account.users.length > 1 }
@@ -777,7 +815,7 @@ module Pageflow
           end
 
         expect do
-          delete(:delete_me, user: {current_password: '@qwert123'})
+          delete(:delete_me, params: {user: {current_password: '@qwert123'}})
         end.not_to change { User.count }
       end
     end

@@ -1,11 +1,11 @@
 require 'cancan'
-require 'state_machine'
+require 'state_machines'
 
 module Pageflow
   class ApplicationController < ActionController::Base
     layout 'pageflow/application'
 
-    before_filter do
+    before_action do
       I18n.locale = current_user.try(:locale) || locale_from_accept_language_header || I18n.default_locale
     end
 
@@ -17,7 +17,7 @@ module Pageflow
 
     rescue_from ActionController::UnknownFormat do |exception|
       debug_log_with_backtrace(exception)
-      render(status: 404, text: 'Not found')
+      render(status: 404, plain: 'Not found')
     end
 
     rescue_from ActiveRecord::RecordNotFound do |exception|
@@ -43,7 +43,7 @@ module Pageflow
       end
     end
 
-    rescue_from StateMachine::InvalidTransition do |exception|
+    rescue_from StateMachines::InvalidTransition do |exception|
       debug_log_with_backtrace(exception)
       respond_to do |format|
         format.html { redirect_to main_app.admin_root_path, :alert => t('pageflow.invalid_transition') }

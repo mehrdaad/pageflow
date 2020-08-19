@@ -8,8 +8,8 @@
   z-index: 0;
 
 
-  .blackLayer,
-  .backgroundArea {
+  .black_layer,
+  .page_background {
     -webkit-backface-visibility: hidden;
     position: relative;
   }
@@ -36,21 +36,18 @@
   section.active {
     display: block;
     -webkit-backface-visibility: hidden;
-    .backgroundArea {
+
+    .page_background {
       opacity: 1;
     }
   }
 
-  section .videoPage .video-js {
+  section .video_page .video-js {
     background-color: black;
   }
 
-  section.invert .videoPage .video-js {
+  section.invert .video_page .video-js {
     background-color: white;
-  }
-
-  section.scroll .content_and_background {
-    z-index: 4; /* bring scrolling content always to front */
   }
 
   .content {
@@ -63,7 +60,6 @@
 
     z-index: 2;
     overflow: hidden;
-    @include transition(0.5s ease);
   }
 
   .page.hidden_by_overlay .content {
@@ -75,9 +71,17 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    right: 0;
     bottom: 0;
     z-index: 1;
+
+    &-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      bottom: 0;
+    }
 
     > div {
       position: absolute;

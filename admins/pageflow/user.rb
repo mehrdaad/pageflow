@@ -122,9 +122,11 @@ module Pageflow
 
     collection_action :quota_state do
       @account = Pageflow::Account.find(params[:account_id])
-      authorize!(:add_member_to, @account)
-
-      render(layout: false)
+      if authorized?(:see_user_quota, @account)
+        render(layout: false)
+      else
+        render(partial: 'not_allowed_to_see_user_quota')
+      end
     end
 
     collection_action 'me', title: I18n.t('pageflow.admin.users.account'), method: [:get, :patch] do
@@ -132,7 +134,7 @@ module Pageflow
 
       if request.patch?
         if @user.update_with_password(user_profile_params)
-          sign_in @user, bypass: true
+          bypass_sign_in @user, scope: :user
           redirect_to admin_root_path, notice: I18n.t('pageflow.admin.users.me.updated')
         end
       end
@@ -152,21 +154,21 @@ module Pageflow
       user = InvitedUser.find(params[:id])
       authorize!(:read, user)
       user.send_invitation!
-      redirect_to :back, notice: I18n.t('pageflow.admin.users.resent_invitation')
+      redirect_back fallback_location: admin_user_path(user), notice: I18n.t('pageflow.admin.users.resent_invitation')
     end
 
     member_action :suspend, method: :post do
       user = User.find(params[:id])
       authorize!(:suspend, user)
       user.suspend!
-      redirect_to :back, notice: I18n.t('pageflow.admin.users.suspended')
+      redirect_back fallback_location: admin_user_path(user), notice: I18n.t('pageflow.admin.users.suspended')
     end
 
     member_action :unsuspend, method: :post do
       user = User.find(params[:id])
       authorize!(:suspend, user)
       user.unsuspend!
-      redirect_to :back, notice: I18n.t('pageflow.admin.users.unsuspended')
+      redirect_back fallback_location: admin_user_path(user), notice: I18n.t('pageflow.admin.users.unsuspended')
     end
 
     controller do

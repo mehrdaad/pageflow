@@ -1,0 +1,43 @@
+@value selectionColor from './colors.module.css';
+@value selectionWidth: 3px;
+
+.root {
+  position: relative;
+  border: solid selectionWidth transparent;
+  padding: 3px;
+  margin-bottom: 4px;
+  text-align: right;
+  background-color: #eee;
+}
+
+.active {
+  border: solid selectionWidth selectionColor;
+}
+
+.thumbnailContainer {
+  position: relative;
+}
+
+.thumbnail {
+  border: solid 1px #888;
+  padding-top: 50%;
+  position: relative;
+  text-align: initial;
+}
+
+.clickMask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.creating .creatingIndicator     { display: block; }
+.destroying .destroyingIndicator { display: block; }
+.failed .failedIndicator         { display: block; }
+
+.creatingIndicator   { composes: creatingIndicator from './outline.module.css'; }
+.destroyingIndicator { composes: destroyingIndicator from './outline.module.css';  }
+.failedIndicator     { composes: failedIndicator from './outline.module.css'; }

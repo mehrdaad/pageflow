@@ -1,0 +1,27 @@
+.backdrop {
+  composes: clip from '../utils.module.css';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.backdropInner {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.backdropInner2 {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.foreground {
+}

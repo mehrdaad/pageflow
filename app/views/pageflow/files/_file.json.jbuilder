@@ -1,6 +1,8 @@
 json.call(file,
           :id,
+          :perma_id,
           :basename,
+          :rights,
           :configuration,
           :parent_file_id,
           :parent_file_model_type)

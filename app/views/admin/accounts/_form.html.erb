@@ -18,35 +18,22 @@
     <% end %>
 
     <%= f.inputs do %>
-      <%= theming.input :default_author,
-        hint: t('pageflow.admin.themings.default_author_hint'),
-        placeholder: Pageflow.config.default_author_meta_tag %>
-      <%= theming.input :default_publisher,
-        hint: t('pageflow.admin.themings.default_publisher_hint'),
-        placeholder: Pageflow.config.default_publisher_meta_tag %>
-      <%= theming.input :default_keywords,
-        hint: t('pageflow.admin.themings.default_keywords_hint'),
-        placeholder: Pageflow.config.default_keywords_meta_tag %>
-    <% end %>
-
-    <%= f.inputs do %>
       <%= theming.input :imprint_link_label %>
       <%= theming.input :imprint_link_url %>
       <%= theming.input :copyright_link_label %>
       <%= theming.input :copyright_link_url %>
+      <%= theming.input :privacy_link_url %>
 
       <% account_config.admin_form_inputs.find_all_for(:theming).each do |form_input| %>
         <%= form_input.build(theming) %>
       <% end %>
     <% end %>
-
-    <%= f.inputs do %>
-      <%= render('admin/accounts/theming_defaults_inline_help') %>
-      <%= theming.input :theme_name, include_blank: false, collection: account_config.themes.names %>
-      <%= theming.input :home_button_enabled_by_default %>
-      <%= admin_widgets_fields(theming, account_config) %>
-    <% end %>
   <% end %>
+
+  <p>
+      <%= t('pageflow.admin.accounts.entry_template_hint') %>
+  </p>
+
   <%= f.actions do %>
     <%= f.action(:submit) %>
     <%= f.action(:cancel, :wrapper_html => {:class => 'cancel'}) %>

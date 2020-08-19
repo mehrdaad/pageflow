@@ -166,21 +166,8 @@ module Pageflow
       end
 
       context 'with registered RevisionComponent' do
-        class TestRevisionComponent < ActiveRecord::Base
-          include RevisionComponent
-          self.table_name = :test_revision_components
-        end
-
-        class RevisionTestPageType < PageType
-          name :test
-
-          def revision_components
-            [TestRevisionComponent]
-          end
-        end
-
         it 'copies registered RevisionComponents' do
-          Pageflow.config.page_types.register(RevisionTestPageType.new)
+          Pageflow.config.revision_components.register(TestRevisionComponent)
           revision = create(:revision)
           TestRevisionComponent.create!(revision: revision)
 
@@ -260,6 +247,21 @@ module Pageflow
       end
     end
 
+    describe '#find_file_by_perma_id' do
+      include UsedFileTestHelper
+
+      it 'returns a UsedFile for the file specified by its usages perma_id' do
+        entry = PublishedEntry.new(create(:entry, :published))
+        revision = entry.revision
+        image_file = create_used_file(:image_file, entry: entry)
+        usage_perma_id = image_file.perma_id
+
+        result = revision.find_file_by_perma_id(Pageflow::ImageFile, usage_perma_id)
+
+        expect(result.perma_id).to eq(usage_perma_id)
+      end
+    end
+
     describe '#pages' do
       it 'orders by storyline position first then by chapter and page position' do
         revision = create(:revision)
@@ -279,6 +281,42 @@ module Pageflow
         expect(pages[1]).to eq(page_2)
         expect(pages[2]).to eq(page_3)
         expect(pages[3]).to eq(page_4)
+      end
+
+      it 'sets is_first on first page' do
+        revision = create(:revision)
+        storyline1 = create(:storyline, revision: revision, position: 1)
+        storyline2 = create(:storyline, revision: revision, position: 2)
+        chapter1 = create(:chapter, storyline: storyline1, position: 1)
+        chapter2 = create(:chapter, storyline: storyline1, position: 1)
+        chapter3 = create(:chapter, storyline: storyline2, position: 1)
+        create(:page, chapter: chapter1, position: 1)
+        create(:page, chapter: chapter1, position: 2)
+        create(:page, chapter: chapter2, position: 1)
+        create(:page, chapter: chapter3, position: 1)
+
+        pages = revision.pages
+
+        expect(pages.map(&:is_first)).to eq([true, nil, nil, nil])
+      end
+    end
+
+    describe '#chapters' do
+      it 'sets is_first on first page' do
+        revision = create(:revision)
+        storyline1 = create(:storyline, revision: revision, position: 1)
+        storyline2 = create(:storyline, revision: revision, position: 2)
+        chapter1 = create(:chapter, storyline: storyline1, position: 1)
+        chapter2 = create(:chapter, storyline: storyline1, position: 1)
+        chapter3 = create(:chapter, storyline: storyline2, position: 1)
+        create(:page, chapter: chapter1, position: 1)
+        create(:page, chapter: chapter1, position: 2)
+        create(:page, chapter: chapter2, position: 1)
+        create(:page, chapter: chapter3, position: 1)
+
+        pages = revision.chapters.map(&:pages).flatten
+
+        expect(pages.map(&:is_first)).to eq([true, nil, nil, nil])
       end
     end
 
@@ -315,6 +353,32 @@ module Pageflow
         chapters = revision.main_storyline_chapters
 
         expect(chapters.size).to eq(0)
+      end
+    end
+
+    describe '.published' do
+      it 'includes revisions that are published indefinitely' do
+        revision = create(:revision, :published)
+
+        expect(Revision.published).to include(revision)
+      end
+
+      it 'includes revisions that are published and not yet depublished' do
+        revision = create(:revision, :not_yet_depublished)
+
+        expect(Revision.published).to include(revision)
+      end
+
+      it 'does not include revisions that are not published' do
+        revision = create(:revision)
+
+        expect(Revision.published).not_to include(revision)
+      end
+
+      it 'does not include revisions that are depublished' do
+        revision = create(:revision, :depublished)
+
+        expect(Revision.published).not_to include(revision)
       end
     end
 
@@ -521,10 +585,10 @@ module Pageflow
     end
 
     describe '#locale' do
-      it 'falls back to default_locale' do
+      it 'falls back to default_locale as string' do
         revision = build(:revision, locale: '')
 
-        expect(revision.locale).to eq(I18n.default_locale)
+        expect(revision.locale).to eq(I18n.default_locale.to_s)
       end
 
       it 'returns present attribute' do
@@ -571,6 +635,152 @@ module Pageflow
         theming = build(:revision, theme_name: 'named_theme')
 
         expect(theming.theme.name).to eq('named_theme')
+      end
+    end
+
+    describe '#active_share_providers' do
+      it 'returns the configured share providers as array of keys' do
+        revision = build(:revision, share_providers: {facebook: true, twitter: false})
+
+        expect(revision.active_share_providers).to eq(['facebook'])
+      end
+    end
+
+    describe '#configuration' do
+      it 'returns home_url value from config hash if there is one' do
+        revision = build(:revision, home_url: 'phishing.ru', configuration: {home_url: 'dot.com'})
+
+        expect(revision.configuration['home_url']).to eq('dot.com')
+      end
+
+      it 'returns home_url value from column if there is none in config hash' do
+        revision = build(:revision, home_url: 'dot.net')
+
+        expect(revision.configuration['home_url']).to eq('dot.net')
+      end
+
+      it "returns nil for home_url if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['home_url']).to be_nil
+      end
+
+      it 'returns home_button_enabled value from config hash if there is one' do
+        revision = build(:revision,
+                         home_button_enabled: false,
+                         configuration: {home_button_enabled: true})
+
+        expect(revision.configuration['home_button_enabled']).to eq(true)
+      end
+
+      it 'returns home_button_enabled value from column if there is none in config hash' do
+        revision = build(:revision, home_button_enabled: true)
+
+        expect(revision.configuration['home_button_enabled']).to eq(true)
+      end
+
+      it "returns nil for home_button_enabled if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['home_button_enabled']).to be_nil
+      end
+
+      it 'returns manual_start value from config hash if there is one' do
+        revision = build(:revision,
+                         manual_start: false,
+                         configuration: {manual_start: true})
+
+        expect(revision.configuration['manual_start']).to eq(true)
+      end
+
+      it 'returns manual_start value from column if there is none in config hash' do
+        revision = build(:revision, manual_start: true)
+
+        expect(revision.configuration['manual_start']).to eq(true)
+      end
+
+      it "returns nil for manual_start if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['manual_start']).to be_nil
+      end
+
+      it 'returns emphasize_new_pages value from config hash if there is one' do
+        revision = build(:revision,
+                         emphasize_new_pages: false,
+                         configuration: {emphasize_new_pages: true})
+
+        expect(revision.configuration['emphasize_new_pages']).to eq(true)
+      end
+
+      it 'returns emphasize_new_pages value from column if there is none in config hash' do
+        revision = build(:revision, emphasize_new_pages: true)
+
+        expect(revision.configuration['emphasize_new_pages']).to eq(true)
+      end
+
+      it "returns nil for emphasize_new_pages if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['emphasize_new_pages']).to be_nil
+      end
+
+      it 'returns emphasize_chapter_beginning value from config hash if there is one' do
+        revision = build(:revision,
+                         emphasize_chapter_beginning: false,
+                         configuration: {emphasize_chapter_beginning: true})
+
+        expect(revision.configuration['emphasize_chapter_beginning']).to eq(true)
+      end
+
+      it 'returns emphasize_chapter_beginning value from column if there is none in config hash' do
+        revision = build(:revision, emphasize_chapter_beginning: true)
+
+        expect(revision.configuration['emphasize_chapter_beginning']).to eq(true)
+      end
+
+      it "returns nil for emphasize_chapter_beginning if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['emphasize_chapter_beginning']).to be_nil
+      end
+
+      it 'returns overview_button_enabled value from config hash if there is one' do
+        revision = build(:revision,
+                         overview_button_enabled: false,
+                         configuration: {overview_button_enabled: true})
+
+        expect(revision.configuration['overview_button_enabled']).to eq(true)
+      end
+
+      it 'returns overview_button_enabled value from column if there is none in config hash' do
+        revision = build(:revision, overview_button_enabled: true)
+
+        expect(revision.configuration['overview_button_enabled']).to eq(true)
+      end
+
+      it "returns nil for overview_button_enabled if config and column don't have value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['overview_button_enabled']).to be_nil
+      end
+
+      it 'returns item from config hash if it has value' do
+        revision = build(:revision, configuration: {temperature: 'moderate'})
+
+        expect(revision.configuration['temperature']).to eq('moderate')
+      end
+
+      it "returns nil if it doesn't have a value" do
+        revision = build(:revision)
+
+        expect(revision.configuration['not_present']).to eq(nil)
+      end
+
+      it "doesn't fall back to some corresponding column on revision even if that column exists" do
+        revision = build(:revision, title: 'Surprise!')
+
+        expect(revision.configuration['title']).to eq(nil)
       end
     end
   end

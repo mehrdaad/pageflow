@@ -1,0 +1,7 @@
+@value font-sans: 'Source Sans Pro', sans-serif;
+
+.Entry {
+  font-family: font-sans;
+  background-color: #000;
+  color: #fff;
+}

@@ -4,16 +4,18 @@
 [![Build Status](https://travis-ci.org/codevise/pageflow.svg?branch=master)](https://travis-ci.org/codevise/pageflow)
 [![Coverage Status](https://coveralls.io/repos/github/codevise/pageflow/badge.svg?branch=master)](https://coveralls.io/github/codevise/pageflow?branch=master)
 [![Code Climate](https://codeclimate.com/github/codevise/pageflow/badges/gpa.svg)](https://codeclimate.com/github/codevise/pageflow)
+[![Reviewed by Hound](https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg)](https://houndci.com)
 
-Multimedia storytelling for the web.
+Multimedia storytelling for the web. Built in cooperation with [WDR](https://wdr.de).
 
 For a high level introduction and example Pageflow stories see
 [pageflow.io](https://pageflow.io).
 
 * [Getting Started](https://github.com/codevise/pageflow/wiki/Getting-Started)
 * [Guides](https://github.com/codevise/pageflow/blob/master/doc/index.md)
-* [JavaScript API Reference](https://doclets.io/codevise/pageflow/master)
-* [Theme API Reference](http://codevise.github.io/pageflow/theme/master/)
+* [JavaScript API Reference of `pageflow` package](http://codevise.github.io/pageflow-docs/js/master/index.html)
+* [JavaScript API Reference of `pageflow-scrolled` package](http://codevise.github.io/pageflow-docs/scrolled/js/master/index.html)
+* [Theme API Reference](http://codevise.github.io/pageflow-docs/theme/master/index.html)
 * [List of Plugins](https://github.com/codevise/pageflow/wiki/List-of-Plugins)
 
 ## Updating
@@ -40,7 +42,7 @@ Pageflow assumes the following choice of libraries:
 * [Devise](https://github.com/plataformatec/devise) for authentication
 * [CanCanCan](https://github.com/CanCanCommunity/cancancan) for authorization
 * [ActiveAdmin](http://activeadmin.info/) for administration
-* [Resque](https://github.com/resque/resque) for background jobs
+* [Resque](https://github.com/resque/resque) for as default for background jobs
 * [FriendlyId](https://github.com/norman/friendly_id) for pretty URLs
 * [Paperclip](https://github.com/thoughtbot/paperclip) for attachment handling
 * [Backbone](http://backbonejs.org/) [Marionette](http://marionettejs.com/) for the editor
@@ -51,7 +53,7 @@ Pageflow assumes the following choice of libraries:
 Pageflow runs in environments with:
 
 * Ruby >= 2.1 (see `.travis.yml` for supported versions)
-* Node >= 6.9.5
+* Node >= 10.0
 * Rails 4.2
 * Redis server (for Resque)
 * A database server supported by Active Record (tested with MySQL)
@@ -92,8 +94,12 @@ for details.
     # Gemfile
     gem 'pageflow', '~> X.Y.Z'
 
-    # Required for Rails 4.2 compatibility
-    gem 'state_machine', git: 'https://github.com/codevise/state_machine.git'
+    # The install generator sets up Resque as Active Job backend
+    gem 'resque', '~> 1.25'
+    gem 'resque-scheduler', '~> 2.5'
+    gem 'ar_after_transaction', '~> 0.5.0'
+    gem 'redis', '~> 3.0'
+    gem 'redis-namespace', '~> 1.5'
 
 Run bundler to install dependencies:
 
@@ -162,8 +168,7 @@ is only available for admins.
 
 ## Troubleshooting
 
-If you run into problems during the installation of Pageflow, please refer to the [Troubleshooting](https://github.com/codevise/pageflow/wiki/Troubleshooting) wiki
-page. If that doesn't help, consider [filing an issue](https://github.com/codevise/pageflow/issues?state=open).
+If you run into problems during the installation of Pageflow, please refer to the [Troubleshooting](doc/troubleshooting.md) docs. If that doesn't help, consider [filing an issue](https://github.com/codevise/pageflow/issues?state=open).
 
 ## Security Policy
 
@@ -198,6 +203,10 @@ The gem is available as open source under the terms of the
 [MIT License](https://github.com/codevise/pageflow/blob/master/MIT-LICENSE).
 
 ## Special Thanks
+
+Built in cooperation with:
+
+[![WDR](doc/supporter_logos/wdr.png)](https://wdr.de)
 
 We would like to express our special thanks to the following services
 for supporting Pageflow through free open source plans:

@@ -3,7 +3,7 @@ module Pageflow
     class FilesController < Pageflow::ApplicationController
       respond_to :json
 
-      before_filter :authenticate_user!
+      before_action :authenticate_user!
 
       def index
         entry = DraftEntry.find(params[:entry_id])
@@ -19,10 +19,13 @@ module Pageflow
         authorize!(:edit, entry.to_model)
         verify_edit_lock!(entry)
 
-        @file = entry.create_file(file_type.model, create_params)
-        @file.publish!
+        @file = entry.create_file!(file_type, create_params)
+        @file.publish! if params[:no_upload]
 
         respond_with(:editor, @file)
+      rescue ActiveRecord::RecordInvalid, DraftEntry::InvalidForeignKeyCustomAttributeError => e
+        debug_log_with_backtrace(e)
+        head :unprocessable_entity
       end
 
       def reuse
@@ -37,7 +40,7 @@ module Pageflow
 
         file_reuse.save!
 
-        redirect_to(entry_url(entry))
+        redirect_to(editor_entry_url(entry))
       end
 
       def retry
@@ -52,6 +55,16 @@ module Pageflow
                      location: editor_entry_file_url(file,
                                                      entry,
                                                      collection_name: params[:collection_name]))
+      end
+
+      def publish
+        entry = DraftEntry.find(params[:entry_id])
+        file = entry.find_file(file_type.model, params[:id])
+
+        authorize!(:update, file.to_model)
+        file.publish!
+
+        head(:no_content)
       end
 
       def update
@@ -78,9 +91,10 @@ module Pageflow
       private
 
       def create_params
-        file_attachment_params
+        file_params.permit(:file_name, :content_type, :file_size)
           .merge(file_configuration_params)
           .merge(file_parent_file_params)
+          .merge(file_custom_params)
       end
 
       def file_reuse_params
@@ -89,12 +103,6 @@ module Pageflow
 
       def update_params
         file_configuration_params
-      end
-
-      def file_attachment_params
-        file_params
-          .permit(attachment: [:tmp_path, :original_name, :content_type])
-          .merge(file_params.permit(:attachment))
       end
 
       def file_configuration_params
@@ -107,6 +115,13 @@ module Pageflow
 
       def file_parent_file_params
         file_params.permit(:parent_file_id, :parent_file_model_type)
+      end
+
+      def file_custom_params
+        file_params.permit(file_type
+                             .custom_attributes
+                             .select { |_, options| options[:permitted_create_param] }
+                             .keys)
       end
 
       def file_params

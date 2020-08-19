@@ -1,4 +1,1 @@
-require 'capybara/rspec'
-require 'capybara/poltergeist'
-
-Capybara.javascript_driver = :poltergeist
+require 'pageflow/support/config/capybara'

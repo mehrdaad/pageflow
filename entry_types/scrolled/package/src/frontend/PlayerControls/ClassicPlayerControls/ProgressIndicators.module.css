@@ -1,0 +1,61 @@
+.container {
+  flex-grow: 1;
+}
+
+.wrapper {
+  margin: 0 10px;
+  position: relative;
+}
+
+.draggable {
+  height: 32px;
+  padding: 13px 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.bars {
+  position: relative;
+  height: 6px;
+  border-radius: 3.5px;
+}
+
+.progressBar {
+  position: absolute;
+  left: 0;
+  height: 6px;
+  border-radius: 2.5px;
+  background: currentColor;
+}
+
+.background {
+  composes: progressBar;
+  opacity: 0.1;
+  width: 100%;
+}
+
+.loadingProgressBar {
+  composes: progressBar;
+  opacity: 0.1;
+}
+
+.playProgressBar {
+  composes: progressBar;
+}
+
+.sliderHandle {
+  width: 14px;
+  height: 14px;
+  margin-left: -6.5px;
+  border-radius: 6.5px;
+  position: absolute;
+  top: -4px;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.dragging .sliderHandle,
+.container:hover .sliderHandle {
+  opacity: 1;
+}

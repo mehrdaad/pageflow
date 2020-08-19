@@ -1,10 +1,6 @@
 module Pageflow
   # Options to be defined in the pageflow initializer of the main app.
   class Configuration
-    # Default options for paperclip attachments which are supposed to
-    # use filesystem storage.
-    attr_accessor :paperclip_filesystem_default_options
-
     # Default options for paperclip attachments which are supposed to use
     # s3 storage.
     attr_accessor :paperclip_s3_default_options
@@ -14,14 +10,32 @@ module Pageflow
     # reprocessing attachments.
     attr_accessor :paperclip_attachments_version
 
-    # Path to the location in the filesystem where attachments shall
-    # be stored. The value of this option is available via the
-    # pageflow_filesystem_root paperclip interpolation.
-    attr_accessor :paperclip_filesystem_root
+    # Root folder in S3 bucket to store files in. Can be used to
+    # separate files of multiple development instances in a shared
+    # development S3 bucket.
+    #
+    # @since 13.0
+    attr_accessor :paperclip_s3_root
+
+    # Upload options provided to direct upload form.
+    # Defaults to S3 storage options.
+    # returns a hash with keys:
+    # - url: The URL to use as the action of the form
+    # - fields: A hash of fields that will be included in the direct upload form.
+    #           This hash should include the signed POST policy, the access key ID and
+    #           security token (if present), etc.
+    #           These fields will be included as input elements of type 'hidden' on the form
+    #
+    # # @since 14.0
+    attr_accessor :paperclip_direct_upload_options
 
     # Refer to the pageflow initializer template for a list of
     # supported options.
     attr_accessor :zencoder_options
+
+    # Contains key and iv used to encrypt string
+    # used by SymmetricEncryption
+    attr_accessor :encryption_options
 
     # A constraint used by the pageflow engine to restrict access to
     # the editor related HTTP end points. This can be used to ensure
@@ -38,11 +52,11 @@ module Pageflow
     #
     # @example
     #
-    # Make a page type only available if a feature flag is set on the
+    # Make a widget type only available if a feature flag is set on the
     # entry or its account
     #
-    #   config.features.register('some_special_page_type' do |config
-    #     config.page_types.register(Pageflow::SomeSpecial.page_type)
+    #   config.features.register('some_special_widget_type' do |config
+    #     config.widget_types.register(Pageflow::SomeSpecial.widget_type)
     #   end
     #
     # @since 0.9
@@ -76,18 +90,28 @@ module Pageflow
     # @return [Themes]
     attr_reader :themes
 
-    # Register new types of pages.
-    # @return [PageTypes]
-    # @since 0.9
-    attr_reader :page_types
+    # Register new types of entries.
+    # @return [EntryTypes]
+    # @since 15.1
+    attr_reader :entry_types
 
-    # List of {FileType} instances provided by page types.
+    # List of {FileType} instances.
+    # Can be registered globally or provided by page types.
     # @return [FileTypes]
     attr_reader :file_types
+
+    # Used to register components whose current state must be
+    # persisted as part of a revision.
+    # @return [RevisionComponents]
+    attr_reader :revision_components
 
     # Used to register new types of widgets to be displayed in entries.
     # @return [WidgetTypes]
     attr_reader :widget_types
+
+    # Used to register new file importers, to be used for importing files
+    # @return [fileImporters]
+    attr_reader :file_importers
 
     # Used to add new sections to the help dialog displayed in the
     # editor.
@@ -155,6 +179,15 @@ module Pageflow
     #     end
     attr_accessor :public_entry_request_scope
 
+    # Either a lambda or an object with a `call` method taking an
+    # {Entry} record and an {ActionDispatch::Request} object and
+    # returning `nil` or a path to redirect to. Can be used in
+    # conjuction with {PrimaryDomainEntryRedirect} to make sure
+    # entries are accessed via their account's configured cname.
+    #
+    # @since 12.4
+    attr_accessor :public_entry_redirect
+
     # Either a lambda or an object with a `call` method taking a
     # {Theming} as paramater and returing a hash of options used to
     # construct the url of a published entry.
@@ -212,7 +245,7 @@ module Pageflow
     #       span(entry.custom_attribute)
     #     end
     #
-    # @since edge
+    # @since 12.2
     # @return [Admin::AttributesTableRows]
     attr_reader :admin_attributes_table_rows
 
@@ -226,6 +259,11 @@ module Pageflow
     # `pageflow-public-i18n` gem.
     # @since 0.10
     attr_accessor :available_public_locales
+
+    # Array of sharing providers which can be configured on theming level.
+    # Defaults to `[:facebook, :twitter, :linked_in, :whats_app, :telegram, :email]`.
+    # @since 14.1
+    attr_accessor :available_share_providers
 
     # How to handle https requests for URLs which will have assets in the page.
     # If you wish to serve all assets over http and prevent mixed-content warnings,
@@ -248,6 +286,13 @@ module Pageflow
     attr_accessor :default_keywords_meta_tag
     attr_accessor :default_author_meta_tag
     attr_accessor :default_publisher_meta_tag
+
+    # Share provider defaults.
+    #
+    # Default share providers for new themings.
+    # Must be a subset or equal to `available_share_providers`
+    # @since 14.1
+    attr_accessor :default_share_providers
 
     # Whether a user can be deleted.
     #
@@ -290,14 +335,33 @@ module Pageflow
     # News collection to add items to. Can be used to integrate
     # Pageflow with Krant (see https://github.com/codevise/krant).
     # @return [#item]
-    # @since edge
+    # @since 12.2
     attr_accessor :news
 
-    def initialize
-      @paperclip_filesystem_default_options = {validate_media_type: false}
-      @paperclip_s3_default_options = {validate_media_type: false}
+    def initialize(target_type_name = nil)
+      @target_type_name = target_type_name
+
+      @paperclip_attachments_version = 'v1'
+      @paperclip_s3_root = 'main'
+
+      @paperclip_s3_default_options = Defaults::PAPERCLIP_S3_DEFAULT_OPTIONS.dup
+
+      @paperclip_direct_upload_options = lambda { |attachment|
+        max_upload_size = 4_294_967_296 # max file size in bytes
+        presigned_post_config = attachment.s3_bucket
+                                          .presigned_post(key: attachment.path,
+                                                          success_action_status: '201',
+                                                          acl: 'public-read',
+                                                          content_length_range: 0..max_upload_size)
+        {
+          url: presigned_post_config.url,
+          fields: presigned_post_config.fields
+        }
+      }
 
       @zencoder_options = {}
+
+      @encryption_options = {}
 
       @mailer_sender = 'pageflow@example.com'
 
@@ -305,16 +369,21 @@ module Pageflow
       @hooks = Hooks.new
       @quotas = Quotas.new
       @themes = Themes.new
-      @page_types = PageTypes.new
-      @file_types = FileTypes.new(page_types)
+      @entry_types = EntryTypes.new
+      @entry_type_configs = {}
+      @entry_type_configure_blocks = Hash.new { |h, k| h[k] = [] }
+      @file_types = FileTypes.new
       @widget_types = WidgetTypes.new
+      @file_importers = FileImporters.new
       @help_entries = HelpEntries.new
+      @revision_components = RevisionComponents.new
 
-      @thumbnail_styles = {}
-      @css_rendered_thumbnail_styles = Pageflow::PagesHelper::CSS_RENDERED_THUMBNAIL_STYLES
+      @thumbnail_styles = Defaults::THUMBNAIL_STYLES.dup
+      @css_rendered_thumbnail_styles = Defaults::CSS_RENDERED_THUMBNAIL_STYLES.dup
 
       @theming_request_scope = CnameThemingRequestScope.new
       @public_entry_request_scope = lambda { |entries, request| entries }
+      @public_entry_redirect = ->(_entry, _request) { nil }
       @public_entry_url_options = Pageflow::ThemingsHelper::DEFAULT_PUBLIC_ENTRY_OPTIONS
       @entry_embed_url_options = {protocol: 'https'}
 
@@ -326,12 +395,15 @@ module Pageflow
 
       @available_locales = [:en, :de]
       @available_public_locales = PublicI18n.available_locales
+      @available_share_providers = [:email, :facebook, :linked_in, :twitter, :telegram, :whats_app]
 
       @public_https_mode = :prevent
 
       @default_keywords_meta_tag = 'pageflow, multimedia, reportage'
       @default_author_meta_tag = 'Pageflow'
       @default_publisher_meta_tag = 'Pageflow'
+
+      @default_share_providers = @available_share_providers
 
       @authorize_user_deletion = lambda { |_user| true }
 
@@ -354,14 +426,54 @@ module Pageflow
       plugin.configure(self)
     end
 
+    # Provide backwards compatibility as long as paged entry type has
+    # not been extracted completely. Prefer accessing entry type
+    # specific config via {#for_entry_type} for new code.
+    #
+    # @return {PageTypes}
+    # @since 0.7
+    def page_types
+      get_entry_type_config(PageflowPaged.entry_type).page_types
+    end
+
     # @deprecated Use `config.page_types.register` instead.
     def register_page_type(page_type)
       ActiveSupport::Deprecation.warn('Pageflow::Configuration#register_page_type is deprecated. Use config.page_types.register instead.', caller)
       page_types.register(page_type)
     end
 
-    def revision_components
-      page_types.map(&:revision_components).flatten.uniq
+    # @deprecated Pageflow now supports direct uploads to S3 via signed post requests.
+    # Please change your forms accordingly.
+    def paperclip_filesystem_root
+      ActiveSupport::Deprecation.warn('Pageflow::Configuration#paperclip_filesystem_root is deprecated.', caller)
+    end
+
+    def paperclip_filesystem_root=(_val)
+      ActiveSupport::Deprecation.warn('Pageflow::Configuration#paperclip_filesystem_root is deprecated.', caller)
+    end
+
+    # Scope configuration to entries of a certain entry type or access
+    # entry type specific configuration. When building a configuration
+    # object for an entry, the passed block is only evaluated when
+    # types match. When building `Pageflow.config`, all
+    # `for_entry_type` blocks are evaluated.
+    #
+    # @param [EntryType] type
+    #
+    # @yieldparam [EntryTypeConfiguration] entry_type_config -
+    #   Instance of configuration class passed as `configuration`
+    #   option during registration of entry type.
+    #
+    # @since 15.1
+    def for_entry_type(type)
+      return if @target_type_name && @target_type_name != type.name
+
+      yield get_entry_type_config(type)
+    end
+
+    # @api private
+    def get_entry_type_config(type)
+      @entry_type_configs[type.name] ||= type.configuration.new(self, type)
     end
 
     # @api private
@@ -387,13 +499,41 @@ module Pageflow
 
     # Restricts the configuration interface to those parts which can
     # be used from inside features.
-    class FeatureLevelConfiguration < Struct.new(:config)
-      delegate :page_types, to: :config
-      delegate :widget_types, to: :config
-      delegate :help_entries, to: :config
-      delegate :admin_form_inputs, to: :config
+    FeatureLevelConfiguration = Struct.new(:config) do
       delegate :admin_attributes_table_rows, to: :config
+      delegate :admin_form_inputs, to: :config
+      delegate :entry_types, to: :config
+      delegate :file_importers, to: :config
+      delegate :help_entries, to: :config
+      delegate :page_types, to: :config
       delegate :themes, to: :config
+      delegate :widget_types, to: :config
+
+      delegate :for_entry_type, to: :config
+    end
+
+    # @api private
+    class ConfigView
+      def initialize(config, entry_type)
+        @config = config
+        @entry_type_config = config.get_entry_type_config(entry_type)
+      end
+
+      def method_missing(method, *args)
+        if @config.respond_to?(method)
+          @config.send(method, *args)
+        elsif @entry_type_config.respond_to?(method)
+          @entry_type_config.send(method, *args)
+        else
+          super
+        end
+      end
+
+      def respond_to_missing?(method_name, include_private = false)
+        @config.respond_to?(method_name) ||
+          @entry_type_config.respond_to?(method_name) ||
+          super
+      end
     end
   end
 end

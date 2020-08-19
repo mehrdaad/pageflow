@@ -2,49 +2,63 @@ require 'spec_helper'
 
 module Pageflow
   describe ConfigHelper do
-    describe '#editor_config_seeds' do
-      it 'includes confirm_encoding_jobs option' do
-        Pageflow.config.confirm_encoding_jobs = true
+    before { helper.extend(RenderJsonHelper) }
 
-        result = JSON.parse(helper.editor_config_seeds)
+    describe '#config_file_url_templates_seed' do
+      it 'renders url templates of registered file types' do
+        url_template = 'files/:id_partition/video.mp4'
+        config = Configuration.new
+        config.file_types.register(FileType.new(model: 'Pageflow::VideoFile',
+                                                collection_name: 'test_files',
+                                                url_templates: -> { {original: url_template} }))
 
-        expect(result['confirmEncodingJobs']).to eq(true)
+        result = helper.render_json do |json|
+          helper.config_file_url_templates_seed(json, config)
+        end
+
+        expect(result).to include_json(test_files: {original: url_template})
       end
 
-      it 'includes file type collection names' do
-        result = JSON.parse(helper.editor_config_seeds)
+      it 'supports camel case key format' do
+        url_template = 'files/:id_partition/video.mp4'
+        config = Configuration.new
+        config.file_types.register(FileType.new(model: 'Pageflow::VideoFile',
+                                                collection_name: 'test_files',
+                                                url_templates: -> { {high_def: url_template} }))
 
-        expect(result['fileTypes'][0]['collectionName']).to eq('image_files')
+        result = helper.render_json do |json|
+          json.key_format!(camelize: :lower)
+          helper.config_file_url_templates_seed(json, config)
+        end
+
+        expect(result).to include_json(testFiles: {highDef: url_template})
+      end
+    end
+
+    describe '#config_file_model_types_seed' do
+      it 'contains mapping of file type collection name to model type name' do
+        config = Configuration.new
+        config.file_types.register(FileType.new(model: 'Pageflow::VideoFile',
+                                                collection_name: 'test_files'))
+
+        result = helper.render_json do |json|
+          helper.config_file_model_types_seed(json, config)
+        end
+
+        expect(result).to include_json(test_files: 'Pageflow::VideoFile')
       end
 
-      it 'includes nested file type collection names' do
-        result = JSON.parse(helper.editor_config_seeds)
+      it 'supports camel case key format' do
+        config = Configuration.new
+        config.file_types.register(FileType.new(model: 'Pageflow::VideoFile',
+                                                collection_name: 'test_files'))
 
-        expect(result['fileTypes'][3]['collectionName']).to eq('text_track_files')
-      end
+        result = helper.render_json do |json|
+          json.key_format!(camelize: :lower)
+          helper.config_file_model_types_seed(json, config)
+        end
 
-      it 'includes available locales' do
-        Pageflow.config.available_locales = [:de, :fr]
-
-        result = JSON.parse(helper.editor_config_seeds)
-
-        expect(result['availableLocales']).to eq(['de', 'fr'])
-      end
-
-      it 'includes available public locales' do
-        Pageflow.config.available_public_locales = [:fr]
-
-        result = JSON.parse(helper.editor_config_seeds)
-
-        expect(result['availablePublicLocales']).to eq(['fr'])
-      end
-
-      it 'includes edit lock interval' do
-        Pageflow.config.edit_lock_polling_interval = 5.seconds
-
-        result = JSON.parse(helper.editor_config_seeds)
-
-        expect(result['editLockPollingIntervalInSeconds']).to eq(5)
+        expect(result).to include_json(testFiles: 'Pageflow::VideoFile')
       end
     end
   end

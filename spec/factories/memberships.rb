@@ -1,9 +1,9 @@
 module Pageflow
-  FactoryGirl.define do
+  FactoryBot.define do
     factory :membership, class: Membership do
       user
       association :entity, factory: :entry
-      role :previewer
+      role { :previewer }
       before(:create) do |membership|
         if membership.entity_type != 'Pageflow::Account' &&
            !membership.user.accounts.include?(membership.entity.account) &&
@@ -19,7 +19,7 @@ module Pageflow
     factory :entry_membership, class: Membership do
       user
       association :entity, factory: :entry
-      role :previewer
+      role { :previewer }
       before(:create) do |membership|
         if !membership.user.accounts.include?(membership.entity.account) &&
            !membership.entity.account.nil?
@@ -34,7 +34,7 @@ module Pageflow
     factory :account_membership, class: Membership do
       user
       association :entity, factory: :account
-      role :member
+      role { :member }
     end
   end
 end

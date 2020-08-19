@@ -15,12 +15,24 @@ module Pageflow
       end
     end
 
-    describe '#create_file' do
+    describe '#create_file!' do
+      it 'prevents perma_id clashes when called concurrently', multithread: true do
+        entry = DraftEntry.new(create(:entry))
+
+        perma_ids = Array.new(3) {
+          Thread.new do
+            entry.create_file!(BuiltInFileType.image, attachment: fixture_file)
+          end
+        }.map(&:join).map(&:value).map(&:perma_id)
+
+        expect(perma_ids.uniq).to have(3).items
+      end
+
       it 'creates image_file on draft' do
         entry = create(:entry)
         draft_entry = DraftEntry.new(entry)
 
-        image_file = draft_entry.create_file(ImageFile, {})
+        draft_entry.create_file!(BuiltInFileType.image, attachment: fixture_file)
 
         expect(entry.draft.reload).to have(1).image_file
       end
@@ -29,9 +41,68 @@ module Pageflow
         entry = create(:entry)
         draft_entry = DraftEntry.new(entry)
 
-        image_file = draft_entry.create_file(ImageFile, {})
+        image_file = draft_entry.create_file!(BuiltInFileType.image, attachment: fixture_file)
 
         expect(image_file.usage_id).to be_present
+      end
+
+      it 'raises exception if record is invalid' do
+        entry = create(:entry)
+        draft_entry = DraftEntry.new(entry)
+
+        expect {
+          draft_entry.create_file!(BuiltInFileType.image, {})
+        }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+
+      it 'raises exception if foreign key custom attribute references file not ' \
+         'used in revision' do
+        pageflow_configure do |config|
+          TestFileType.register(config,
+                                custom_attributes: {
+                                  related_image_file_id: {
+                                    model: 'Pageflow::ImageFile'
+                                  }
+                                })
+        end
+        test_file_type = Pageflow.config.file_types.find_by_model!(TestUploadableFile)
+
+        entry = create(:entry)
+        draft_entry = DraftEntry.new(entry)
+        image_file = create(:image_file)
+
+        expect {
+          draft_entry.create_file!(test_file_type,
+                                   attachment: fixture_file,
+                                   related_image_file_id: image_file.id)
+        }.to raise_error(DraftEntry::InvalidForeignKeyCustomAttributeError)
+      end
+
+      it 'does not raise exception if foreign key custom attribute references file ' \
+         'used in revision' do
+        pageflow_configure do |config|
+          TestFileType.register(config,
+                                custom_attributes: {
+                                  related_image_file_id: {
+                                    model: 'Pageflow::ImageFile'
+                                  }
+                                })
+        end
+        test_file_type = Pageflow.config.file_types.find_by_model!(TestUploadableFile)
+
+        entry = create(:entry)
+        draft_entry = DraftEntry.new(entry)
+        image_file = create(:image_file, used_in: entry.draft)
+
+        expect {
+          draft_entry.create_file!(test_file_type,
+                                   attachment: fixture_file,
+                                   related_image_file_id: image_file.id)
+        }.not_to raise_error
+      end
+
+      def fixture_file
+        File.open(Engine.root.join('spec', 'fixtures', 'image.jpg'))
       end
     end
 

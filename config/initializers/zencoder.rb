@@ -1,5 +1,4 @@
 require 'zencoder'
-require 'pageflow/zencoder_api'
 
 Pageflow.after_global_configure do |config|
   zencoder_options = config.zencoder_options
@@ -45,4 +44,8 @@ end
 
 Paperclip.interpolates(:zencoder_path) do |attachment, style|
   attachment.path
+end
+
+Paperclip.interpolates(:zencoder_filename) do |attachment, _style|
+  attachment.original_filename
 end

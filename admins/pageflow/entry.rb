@@ -31,7 +31,7 @@ module Pageflow
 
       column class: 'buttons' do |entry|
         if authorized?(:edit, entry)
-          icon_link_to(pageflow.edit_entry_path(entry),
+          icon_link_to(pageflow.editor_entry_path(entry),
                        tooltip: I18n.t('pageflow.admin.entries.editor_hint'),
                        class: 'editor')
         end
@@ -130,6 +130,14 @@ module Pageflow
                   input_html: {style: 'width: 200px'})
         end
 
+        if f.object.new_record?
+          f.input :type_name,
+                  as: :select,
+                  include_blank: false,
+                  collection: entry_type_collection,
+                  wrapper_html: {style: 'display: none'}
+        end
+
         if authorized?(:configure_folder_for, resource)
           folder_collection = collection_for_folders(resource.account, resource.folder)
           f.input(:folder,
@@ -168,6 +176,18 @@ module Pageflow
       end
     end
 
+    collection_action :entry_types do
+      account = Pageflow::Account.find(params[:account_id])
+
+      if authorized?(:see_entry_types, account)
+        @entry_types = helpers.entry_type_collection_for_account(account)
+
+        render(layout: false)
+      else
+        render(partial: 'not_allowed_to_see_entry_types', status: 403)
+      end
+    end
+
     member_action :duplicate, method: :post do
       entry = Entry.find(params[:id])
       authorize!(:duplicate, entry)
@@ -179,7 +199,7 @@ module Pageflow
       entry = Entry.find(params[:id])
       authorize!(:snapshot, entry)
       entry.snapshot(creator: current_user, type: 'user')
-      redirect_to(admin_entry_path(entry))
+      redirect_to(admin_entry_path(entry, params.permit(:tab)))
     end
 
     member_action :preview do
@@ -221,7 +241,7 @@ module Pageflow
 
       def update
         update! do |success, _|
-          success.html { redirect_to(admin_entry_path(resource, params.slice(:tab))) }
+          success.html { redirect_to(admin_entry_path(resource, params.permit(:tab))) }
         end
       end
 
@@ -251,7 +271,7 @@ module Pageflow
       end
 
       def permitted_attributes
-        result = [:title]
+        result = [:title, :type_name]
         target = if !params[:id] && current_user.admin?
                    Account.first
                  elsif params[:id]

@@ -68,8 +68,9 @@ trouble when using https.
 * You need to enable Cross Origin Resource Sharing (CORS).
 
   * Still in the Permissions screen, click _CORS Configuration_.
-  * Paste the code below. This grants everyone GET requests, which is
-    what Pageflow needs.
+  * Paste the code below. The first rule grants everyone GET requests, which is
+    what Pageflow needs. The second rule grants POST access to your origin. 
+    This is required for file uploads to work.
 
 ```
 <CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
@@ -79,9 +80,16 @@ trouble when using https.
         <MaxAgeSeconds>28800</MaxAgeSeconds>
         <AllowedHeader>*</AllowedHeader>
     </CORSRule>
+    <CORSRule>
+        <AllowedOrigin>{insert your origin here}</AllowedOrigin>
+        <AllowedMethod>POST</AllowedMethod>
+        <MaxAgeSeconds>3000</MaxAgeSeconds>
+        <AllowedHeader>*</AllowedHeader>
+    </CORSRule>
 </CORSConfiguration>
 ```
 
+You will need to make sure that your production bucket has an appropriate origin set for _AllowedOrigin_.
 You can tweak these rules if you want to. See the
 [Amazon Developer Guide](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html#how-do-i-enable-cors).
 
@@ -107,9 +115,10 @@ files to S3. Edit the `paperclip_s3_default_options` settings in
     s3_credentials: {
       bucket: 'com-example-pageflow-development',
       access_key_id: 'xxx',
-      secret_access_key: 'xxx',
-      s3_host_name: 's3-eu-west-1.amazonaws.com'
+      secret_access_key: 'xxx'
     },
+    s3_host_name: 's3-eu-west-1.amazonaws.com',
+    s3_region: 'eu-west-1',
     s3_host_alias: 'com-example-pageflow.s3-website-eu-west-1.amazonaws.com',
     s3_protocol: 'http'
   )
@@ -130,6 +139,8 @@ The required options are:
   for more information.  **Important**: Be sure NOT to enter an S3
   Website endpoint (`s3-website-*.amazonaws.com`) here. Those enpoints
   can only be used for read access to files from your buckets.
+
+* `s3_region`: The AWS region where you've created your buckets.
 
 * `s3_host_alias`: The host name that shall be used for image URLs in
   your published entries. This can be the hostname of some CDN you

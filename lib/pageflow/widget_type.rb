@@ -1,5 +1,8 @@
 module Pageflow
   class WidgetType
+    class NotFoundError < RuntimeError
+    end
+
     # Name to display in editor.
     def translation_key
       "pageflow.#{name}.widget_type_name"
@@ -23,6 +26,14 @@ module Pageflow
     # Override to return false to hide widget in entry preview.
     def enabled_in_preview?
       true
+    end
+
+    # Point in DOM where widget should be inserted. Possible values
+    # are `:bottom_of_entry` (default) or `:before_entry`.
+    #
+    # @since 13.0
+    def insert_point
+      :bottom_of_entry
     end
 
     # Override instead of render to use the widget

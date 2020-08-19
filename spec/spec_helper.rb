@@ -3,11 +3,16 @@ ENV['RAILS_ENV'] ||= 'test'
 require 'coveralls'
 Coveralls.wear!
 
+require 'rails-controller-testing'
 require 'rspec/rails'
 require 'rspec/collection_matchers'
+require 'rspec/json_expectations'
 require 'domino'
 require 'ammeter/init'
 require 'pundit/matchers'
+
+require 'pageflow/test_widget_type'
+require 'pageflow/used_file_test_helper'
 
 Dir[File.join(File.dirname(__FILE__), 'support/{config,dominos,helpers,matchers}/**/*.rb')].each { |file| require(file) }
 Dir[Pageflow::Engine.root.join("spec/**/*_examples.rb")].each { |file| require(file) }

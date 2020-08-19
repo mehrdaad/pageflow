@@ -1,0 +1,34 @@
+.Toolbar {
+  background: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  display: flex;
+  gap: 2px;
+}
+
+.button {
+  border: 0;
+  background: #fff;
+  padding: 10px;
+  opacity: 0.6;
+}
+
+.button:hover {
+  opacity: 1;
+}
+
+.activeButton {
+  background: #ddd;
+  opacity: 1;
+}
+
+@media (max-width: 460px) {
+  .collapsible .button {
+    display: none;
+  }
+
+  .collapsible:hover .button,
+  .collapsible:focus-within .button,
+  .collapsible .activeButton {
+    display: inline-block;
+  }
+}

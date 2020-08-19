@@ -1,19 +1,26 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :account, class: Pageflow::Account do
-    name 'Account Name'
+    name { 'Account Name' }
 
     after(:build) do |account|
       account.default_theming ||= build(:theming, account: account)
     end
 
-    transient do
-      with_member nil
-      with_previewer nil
-      with_editor nil
-      with_publisher nil
-      with_manager nil
+    trait(:with_first_paged_entry_template) do
+      after(:create) do |account, _|
+        create(:entry_template, account: account, entry_type: 'paged')
+      end
+    end
 
-      with_feature nil
+    transient do
+      with_member { nil }
+      with_previewer { nil }
+      with_editor { nil }
+      with_publisher { nil }
+      with_manager { nil }
+
+      with_feature { nil }
+      without_feature { nil }
     end
 
     after(:create) do |account, evaluator|
@@ -41,7 +48,8 @@ FactoryGirl.define do
 
     after(:build) do |entry, evaluator|
       entry.features_configuration =
-        entry.features_configuration.merge(evaluator.with_feature => true)
+        entry.features_configuration.merge(evaluator.with_feature => true,
+                                           evaluator.without_feature => false)
     end
   end
 end

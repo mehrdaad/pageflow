@@ -1,0 +1,33 @@
+.text h2,
+.text li,
+.text p {
+  margin: 1em 0 0 0;
+}
+
+.text a {
+  color: currentColor;
+  word-wrap: break-word;
+}
+
+.text ol,
+.text ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.text blockquote {
+  padding: 0.5em 1em 0.5em 2em;
+  margin: 1em 0 0 0.5em;
+  position: relative;
+}
+
+.text blockquote::before {
+  content: "“";
+  font-size: 3em;
+  font-weight: bold;
+  color: #aaa;
+  position: absolute;
+  top: 0;
+  left: 0;
+  line-height: 1em;
+}

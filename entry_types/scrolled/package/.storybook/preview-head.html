@@ -1,0 +1,30 @@
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700&display=swap" rel="stylesheet">
+
+<style>
+  /* Do not report different loading progress as visual change */
+  video::-webkit-media-controls-timeline {
+    visibility: hidden;
+  }
+
+  [data-percy=hide] {
+    position: relative;
+  }
+
+  [data-percy=hide]::after {
+    content: "Content hidden to prevent flaky Percy snapshots";
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    background: green;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+  }
+</style>
+
+<script>
+  window.VIDEOJS_NO_DYNAMIC_STYLE = true;
+</script>

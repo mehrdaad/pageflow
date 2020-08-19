@@ -1,0 +1,29 @@
+.primaryIconButton {
+  /* see app/assets/stylesheets/pageflow/editor/composable.scss */
+  composes: primary_icon_button from global;
+}
+
+.secondaryIconButton {
+  /* see app/assets/stylesheets/pageflow/editor/composable.scss */
+  composes: secondary_icon_button from global;
+}
+
+.unstyledButton {
+  border: 0;
+  text-align: initial;
+}
+
+.addButton {
+  composes: primaryIconButton;
+  composes: plusCircled from './icons.module.css';
+}
+
+.cancelButton {
+  composes: secondaryIconButton;
+  composes: cancel from './icons.module.css';
+}
+
+.saveButton {
+  composes: primaryIconButton;
+  composes: check from './icons.module.css';
+}

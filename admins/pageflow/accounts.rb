@@ -30,9 +30,6 @@ module Pageflow
           membership_role_with_tooltip(own_role, scope: 'own_account_role')
         end
       end
-      column :default_theming do |account|
-        account.default_theming.theme_name if authorized?(:read, account)
-      end
     end
 
     csv do
@@ -72,8 +69,8 @@ module Pageflow
 
     controller do
       helper Pageflow::Admin::FeaturesHelper
-      helper Pageflow::Admin::WidgetsHelper
       helper Pageflow::Admin::FormHelper
+      helper Pageflow::Admin::LocalesHelper
       helper Pageflow::Admin::MembershipsHelper
       helper ThemesHelper
 
@@ -83,37 +80,23 @@ module Pageflow
       end
 
       def create
-        @account = Account.new(permitted_params[:account])
-        @account.build_default_theming(permitted_params[:account][:default_theming_attributes])
+        account_params = permitted_params[:account] || {}
+        @account = Account.new(account_params)
+        @account.build_default_theming(permitted_params.fetch(:account, {})[
+                                         :default_theming_attributes])
         super
-        update_widgets
       end
 
       def update
         update! do |success, failure|
-          success.html { redirect_to(admin_account_path(resource, params.slice(:tab))) }
-        end
-        update_widgets
-      end
-
-      def update_widgets
-        @account.default_theming.widgets.batch_update!(widgets_params) if @account.valid?
-      end
-
-      def widgets_params
-        params.fetch(:widgets, {}).map do |role, type_name|
-          {role: role, type_name: type_name}
+          success.html { redirect_to(admin_account_path(resource, params.permit(:tab))) }
         end
       end
 
       def permitted_params
         result = params.permit(account: permitted_account_attributes)
 
-        if result[:account]
-          permit_feature_states(result[:account])
-        end
-
-        result
+        with_permitted_feature_states(result)
       end
 
       def scoped_collection
@@ -121,6 +104,12 @@ module Pageflow
       end
 
       private
+
+      def with_permitted_feature_states(result)
+        result[:account] && permit_feature_states(result[:account])
+
+        result
+      end
 
       def permitted_account_attributes
         [
@@ -135,16 +124,12 @@ module Pageflow
         [
           :cname,
           :additional_cnames,
-          :theme_name,
           :imprint_link_url,
           :imprint_link_label,
           :copyright_link_url,
           :copyright_link_label,
-          :home_url,
-          :home_button_enabled_by_default,
-          :default_author,
-          :default_publisher,
-          :default_keywords
+          :privacy_link_url,
+          :home_url
         ] +
           permitted_attributes_for(:theming)
       end

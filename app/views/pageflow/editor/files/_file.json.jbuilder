@@ -7,8 +7,12 @@ json.call(file,
           :rights,
           :usage_id)
 
+if file.can_upload?
+  json.direct_upload_config(file.direct_upload_config)
+end
+
 json.retryable(file.retryable?)
-json.file_name(file.attachment.original_filename)
+json.file_name(file.file_name)
 
 if file.url.present?
   json.url(file.url)

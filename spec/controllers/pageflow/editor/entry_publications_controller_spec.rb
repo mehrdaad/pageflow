@@ -11,9 +11,9 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry.id, entry_publication: {}, format: :json)
+          post(:create, params: {entry_id: entry.id, entry_publication: {}}, format: :json)
 
           expect(response.status).to eq(200)
         end
@@ -22,11 +22,13 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
           post(:create,
-               entry_id: entry,
-               entry_publication: {published_until: 1.month.from_now},
+               params: {
+                 entry_id: entry,
+                 entry_publication: {published_until: 1.month.from_now}
+               },
                format: :json)
 
           expect(json_response(path: [:entry, :published])).to eq(true)
@@ -37,11 +39,11 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {
+          post(:create, params: {entry_id: entry, entry_publication: {
                  published_until: 1.month.from_now
-               }, format: :json)
+               }}, format: :json)
           revision = entry.revisions.published.last
 
           expect(revision.published_until).to eq(1.month.from_now)
@@ -51,12 +53,12 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {
+          post(:create, params: {entry_id: entry, entry_publication: {
                  password_protected: true,
                  password: 'abc123abc'
-               }, format: :json)
+               }}, format: :json)
 
           expect(entry.reload).to be_published_with_password('abc123abc')
         end
@@ -65,11 +67,11 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {
+          post(:create, params: {entry_id: entry, entry_publication: {
                  password_protected: true
-               }, format: :json)
+               }}, format: :json)
 
           expect(response.status).to eq(400)
         end
@@ -78,9 +80,9 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {}, format: :json)
+          post(:create, params: {entry_id: entry, entry_publication: {}}, format: :json)
 
           expect(entry.revisions.where(creator: user)).to be_present
         end
@@ -89,8 +91,8 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_editor: user)
 
-          sign_in(user)
-          post(:create, entry_id: entry, entry_publication: {}, format: :json)
+          sign_in(user, scope: :user)
+          post(:create, params: {entry_id: entry, entry_publication: {}}, format: :json)
 
           expect(response.status).to eq(403)
         end
@@ -98,7 +100,7 @@ module Pageflow
         it 'requires authentication' do
           entry = create(:entry)
 
-          post(:create, entry_id: entry, entry_publication: {}, format: :json)
+          post(:create, params: {entry_id: entry, entry_publication: {}}, format: :json)
 
           expect(response.status).to eq(401)
         end
@@ -109,9 +111,9 @@ module Pageflow
 
           Pageflow.config.quotas.register(:published_entries, QuotaDouble.exceeded)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {}, format: :json)
+          post(:create, params: {entry_id: entry, entry_publication: {}}, format: :json)
 
           expect(response.status).to eq(403)
         end
@@ -123,9 +125,9 @@ module Pageflow
 
           Pageflow.config.quotas.register(:published_entries, QuotaDouble.exhausted)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry, entry_publication: {}, format: :json)
+          post(:create, params: {entry_id: entry, entry_publication: {}}, format: :json)
 
           expect(response.status).to eq(200)
         end
@@ -134,9 +136,9 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:create, entry_id: entry.id, entry_publication: {}, format: 'json')
+          post(:create, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(json_response(path: :published_message_html)).not_to be_nil
         end
@@ -147,9 +149,9 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_publisher: user)
 
-          sign_in(user)
+          sign_in(user, scope: :user)
           acquire_edit_lock(user, entry)
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(json_response(path: :exceeding)).to eq(false)
         end
@@ -159,8 +161,8 @@ module Pageflow
           entry = create(:entry, with_publisher: user)
           Pageflow.config.quotas.register(:published_entries, QuotaDouble.exceeded)
 
-          sign_in(user)
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          sign_in(user, scope: :user)
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(json_response(path: :exceeding)).to eq(true)
         end
@@ -170,8 +172,8 @@ module Pageflow
           entry = create(:entry, with_publisher: user)
           Pageflow.config.quotas.register(:published_entries, QuotaDouble.available)
 
-          sign_in(user)
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          sign_in(user, scope: :user)
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(json_response(path: [:quota, :state])).to eq('available')
           expect(json_response(path: [:quota, :state_description])).to eq('Quota available')
@@ -182,8 +184,8 @@ module Pageflow
           entry = create(:entry, with_publisher: user)
           Pageflow.config.quotas.register(:published_entries, QuotaDouble.available)
 
-          sign_in(user)
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          sign_in(user, scope: :user)
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(json_response(path: :exhausted_html)).to be_present
         end
@@ -192,8 +194,8 @@ module Pageflow
           user = create(:user)
           entry = create(:entry, with_editor: user)
 
-          sign_in(user)
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          sign_in(user, scope: :user)
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(response.status).to eq(403)
         end
@@ -201,7 +203,7 @@ module Pageflow
         it 'is forbidden if not signed in' do
           entry = create(:entry)
 
-          post(:check, entry_id: entry.id, entry_publication: {}, format: 'json')
+          post(:check, params: {entry_id: entry.id, entry_publication: {}}, format: 'json')
 
           expect(response.status).to eq(401)
         end

@@ -38,7 +38,8 @@ input {
   margin: 0 -2px;
 }
 
-.invalid input {
+.invalid input,
+.invalid textarea {
   border: solid 1px red;
 }
 
@@ -128,7 +129,8 @@ textarea.short {
   }
 }
 
-.configuration_editor {
+.configuration_editor,
+.configuration_editor_tab {
   margin: 10px 0;
   padding-bottom: 20px;
 
@@ -220,4 +222,8 @@ textarea.short {
 
 .configuration_editor a {
   text-decoration: underline;
+}
+
+.input-hidden_via_binding {
+  display: none;
 }

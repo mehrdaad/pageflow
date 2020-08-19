@@ -1,0 +1,102 @@
+.sliderStart {
+  background-color: white;
+  position: absolute;
+  z-index: 1;
+}
+
+.container {
+  --frame1pos: -8;
+  --frame2pos: 16;
+  --frame3pos: -32;
+  --frame4pos: 32;
+  --frame1px: calc(var(--frame1pos) * 1px);
+  --frame2px: calc(var(--frame2pos) * 1px);
+  --frame3px: calc(var(--frame3pos) * 1px);
+  --frame4px: calc(var(--frame4pos) * 1px);
+  /* in addition to the above variables, we receive --initial-rect-width
+   from BeforeAfter.js, which has no sensible default value */
+}
+
+/* With react-compare-image 2.0.4 (commit 7410d14), this selects the
+   slider */
+.container.wiggle div div:nth-child(3) {
+  animation: SliderLeftRightShake 1.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* With react-compare-image 2.0.4 (commit 7410d14), this selects the
+   before image */
+.container.wiggle div img:nth-child(2) {
+  animation: BeforeImageLeftRightShake 1.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* With react-compare-image 2.0.4 (commit 7410d14), this selects the
+   before label */
+.container div div:nth-child(4) div {
+  transition: opacity 0.1s ease-out 0.3s !important;
+}
+
+/* With react-compare-image 2.0.4 (commit 7410d14), this selects the
+   after image */
+.container.wiggle div img:nth-child(1) {
+  animation: AfterImageLeftRightShake 1.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* With react-compare-image 2.0.4 (commit 7410d14), this selects the
+   after label */
+.container div div:nth-child(5) div {
+  transition: opacity 0.1s ease-out 0.3s !important;
+}
+
+@keyframes BeforeImageLeftRightShake {
+  10%, 90% {
+    clip: rect(auto, calc(var(--initial-rect-width) + var(--frame1px)), auto, auto);
+  }
+
+  20%, 80% {
+    clip: rect(auto, calc(var(--initial-rect-width) + var(--frame2px)), auto, auto);
+  }
+
+  30%, 50%, 70% {
+    clip: rect(auto, calc(var(--initial-rect-width) + var(--frame3px)), auto, auto);
+  }
+
+  40%, 60% {
+    clip: rect(auto, calc(var(--initial-rect-width) + var(--frame4px)), auto, auto);
+  }
+}
+
+@keyframes AfterImageLeftRightShake {
+  10%, 90% {
+    clip: rect(auto, auto, auto, calc(var(--initial-rect-width) + var(--frame1px)));
+  }
+
+  20%, 80% {
+    clip: rect(auto, auto, auto, calc(var(--initial-rect-width) + var(--frame2px)));
+  }
+
+  30%, 50%, 70% {
+    clip: rect(auto, auto, auto, calc(var(--initial-rect-width) + var(--frame3px)));
+  }
+
+  40%, 60% {
+    clip: rect(auto, auto, auto, calc(var(--initial-rect-width) + var(--frame4px)));
+  }
+}
+
+@keyframes SliderLeftRightShake {
+  10%, 90% {
+    transform: translate3d(-20%, 0, 0);
+  }
+
+  20%, 80% {
+    transform: translate3d(40%, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-80%, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(80%, 0, 0);
+  }
+}

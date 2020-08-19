@@ -5,9 +5,12 @@ module Pageflow
     # available as built-ins.
     def self.image
       FileType.new(model: 'Pageflow::ImageFile',
+                   partial: 'pageflow/image_files/image_file',
                    editor_partial: 'pageflow/editor/image_files/image_file',
                    collection_name: 'image_files',
                    url_templates: ImageFileUrlTemplates.new,
+                   css_background_image_urls: ImageFileCssBackgroundImageUrls.new,
+                   css_background_image_class_prefix: 'image',
                    top_level_type: true)
     end
 
@@ -17,12 +20,15 @@ module Pageflow
                    editor_partial: 'pageflow/editor/video_files/video_file',
                    collection_name: 'video_files',
                    url_templates: VideoFileUrlTemplates.new,
+                   css_background_image_urls: VideoFileCssBackgroundImageUrls.new,
+                   css_background_image_class_prefix: 'video_poster',
                    top_level_type: true,
                    nested_file_types: [BuiltInFileType.text_track])
     end
 
     def self.audio
       FileType.new(model: 'Pageflow::AudioFile',
+                   partial: 'pageflow/audio_files/audio_file',
                    editor_partial: 'pageflow/editor/audio_files/audio_file',
                    collection_name: 'audio_files',
                    url_templates: AudioFileUrlTemplates.new,

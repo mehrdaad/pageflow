@@ -1,15 +1,15 @@
 module Pageflow
-  FactoryGirl.define do
+  FactoryBot.define do
     factory :video_file, :class => VideoFile do
       entry
       uploader { create(:user) }
 
-      attachment_on_s3 File.open(Engine.root.join('spec', 'fixtures', 'video.mp4'))
-      state 'encoded'
+      attachment { File.open(Engine.root.join('spec', 'fixtures', 'video.mp4')) }
+      state { 'encoded' }
 
       transient do
-        used_in nil
-        with_configuration nil
+        used_in { nil }
+        with_configuration { nil }
       end
 
       before(:create) do |file, evaluator|
@@ -25,24 +25,35 @@ module Pageflow
         end
       end
 
-      trait :on_filesystem do
-        attachment_on_filesystem File.open(Engine.root.join('spec', 'fixtures', 'video.mp4'))
-        attachment_on_s3 nil
-        state 'not_uploaded_to_s3'
+      trait :uploading do
+        attachment { nil }
+        file_name { 'video.mp4' }
+        state { 'uploading' }
+
+        after :create do |video_file|
+          simulate_direct_upload(video_file)
+        end
       end
 
-      trait :uploading_to_s3_failed do
-        attachment_on_filesystem File.open(Engine.root.join('spec', 'fixtures', 'video.mp4'))
-        attachment_on_s3 nil
-        state 'uploading_to_s3_failed'
+      trait :uploaded do
+        uploading
+        state { 'uploaded' }
+      end
+
+      trait :uploading_failed do
+        state { 'uploading_failed' }
       end
 
       trait :waiting_for_confirmation do
-        state 'waiting_for_confirmation'
+        state { 'waiting_for_confirmation' }
+      end
+
+      trait :fetching_meta_data_failed do
+        state { 'fetching_meta_data_failed' }
       end
 
       trait :encoding_failed do
-        state 'encoding_failed'
+        state { 'encoding_failed' }
       end
 
       trait :encoded do
